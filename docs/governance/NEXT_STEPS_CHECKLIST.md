@@ -14,22 +14,31 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
     - root commit `b533f750ab9538d5ff48ed7c979947cbeebe128f`;
     - tree `15138b5f619bce2347461a4e28c9f51562e6c1e6`;
     - 230 file, 2,543,926 byte, 41,454 dòng baseline;
-    - remote có URL nhưng chưa có branch; working tree sạch sau commit;
+    - remote `origin/main` đã được tạo ở NS-002; working tree sạch sau commit;
     - không phát hiện private key/token pattern độ tin cậy cao;
     - `.env`, `node_modules`, `.next`, `dist`, coverage và `tsbuildinfo` bị ignore.
   - Whitespace note: baseline giữ nguyên whitespace của master SOP và archived
     snapshot để không sửa artifact trong cùng promotion/history change.
   - Không push trong bước này; push là external change riêng tại NS-002.
 
-- [ ] **NS-002 — Push baseline và chạy remote CI clean checkout** (`NEXT — PENDING AUTHORIZATION`)
+- [x] **NS-002 — Push baseline và chạy remote CI clean checkout** (`COMPLETE`)
   - Owner role: Repository Owner/Engineering Lead.
   - Dependency: NS-001 và quyền push GitHub.
-  - Evidence: branch URL/commit SHA; frozen install, migrate/seed, lint, typecheck,
-    11 unit tests, build, compose và smoke đều PASS trong GitHub Actions.
+  - Evidence:
+    - `origin/main` trỏ tới commit
+      `21e5f42ae74d35c45393b8f63eae96a9a7a665ab`;
+    - [GitHub Actions run 33293376641](https://github.com/residoken-wq/erp-preschool/actions/runs/33293376641)
+      hoàn tất `success` ngày 30/08/2026;
+    - job `quality` PASS: frozen install, migration `0001`–`0005`, synthetic seed,
+      lint, typecheck, 11 unit tests, build và API smoke;
+    - job `compose-config` PASS: `docker compose config --quiet`.
 
-- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`BLOCKED`)
+- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`NEXT — BLOCKED`)
   - Owner role: Repository Owner.
   - Dependency: tên GitHub team/user và NS-002.
+  - Blocker: GitHub CLI token của `residoken-wq` không hợp lệ; API branch
+    protection trả `401 Requires authentication`; CODEOWNERS vẫn là template có
+    comment `@TBD`, chưa có handle có thể xác minh.
   - Required: PR-only `main`, required CI, required review, no force-push/delete,
     Security/Privacy review cho HRI/auth/finance/AI.
   - Evidence: exported setting/screenshot không chứa secret và CODEOWNERS hợp lệ.

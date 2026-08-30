@@ -6,7 +6,7 @@
 | Exit criterion | Evidence | Status |
 |---|---|---|
 | Một canonical source | Source Promotion Manifest: 90/90 checksum match | PASS |
-| CI từ clean checkout | local baseline commit `b533f75`; frozen local gates PASS; remote clean-checkout CI chưa chạy | IN PROGRESS |
+| CI từ clean checkout | local baseline commit `b533f75`; remote `main` commit `21e5f42`; GitHub Actions run `33293376641` | PASS |
 | Named Product/Security/Data/Pilot owners | Program Governance | BLOCKED — DEC-001/002 |
 | 28 SOP mapped/deduplicated | Canonical SOP Register; source count discrepancy recorded | PASS baseline; approval pending |
 | Decision Register có owner/deadline | role owner và gate recorded | PASS baseline; named owners pending |
@@ -19,8 +19,7 @@
 1. Sponsor chỉ định tối thiểu Product, Security, Data/SOP và Pilot Process Owner.
 2. Security/Privacy owner review threat model và đưa TM-001/TM-004 cùng các high
    threats vào Phase 1 backlog/gate.
-3. Tạo initial commit/remote branch protection và chạy CI từ clean checkout; local
-   equivalent đã PASS nhưng không thay thế evidence từ remote CI.
+3. Cấu hình branch protection và CODEOWNERS thật cho `main`.
 4. Product/Architecture/Security/Privacy review backlog, traceability và open decisions.
 
 ## Execution evidence ngày 30/08/2026
@@ -41,6 +40,7 @@
 | Full container stack | API/PostgreSQL healthy; Web/Worker/MinIO running; smoke PASS |
 | Cleanup | stack stopped; volumes giữ lại, không xóa dữ liệu test |
 | Git baseline | PASS local: root commit `b533f750ab9538d5ff48ed7c979947cbeebe128f`, 230 files |
+| Remote clean-checkout CI | PASS: `origin/main` commit `21e5f42ae74d35c45393b8f63eae96a9a7a665ab`; [run 33293376641](https://github.com/residoken-wq/erp-preschool/actions/runs/33293376641); jobs `quality` và `compose-config` |
 
 Smoke bao gồm health/security headers, context/dashboard/list, create lead, missing
 permission `403`, duplicate `409`, invalid transition `409` và audit-chain integrity.
