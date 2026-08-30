@@ -4,6 +4,7 @@ set -euo pipefail
 
 repository="${GITHUB_REPOSITORY:-residoken-wq/erp-preschool}"
 branch="${GITHUB_PROTECTED_BRANCH:-main}"
+reviewer="${GITHUB_REVIEWER:-phamhanghula-ui}"
 command="${1:-verify}"
 
 require_command() {
@@ -29,6 +30,33 @@ require_repository_admin() {
   is_admin="$(gh api "repos/${repository}" --jq '.permissions.admin')"
   if [[ "${is_admin}" != "true" ]]; then
     echo "The authenticated account must have admin permission on ${repository}." >&2
+    exit 1
+  fi
+}
+
+require_independent_reviewer() {
+  local repository_owner="${repository%%/*}"
+  local permission
+
+  if [[ "${reviewer}" == "${repository_owner}" ]]; then
+    echo "GITHUB_REVIEWER must differ from repository owner ${repository_owner}." >&2
+    exit 1
+  fi
+
+  permission="$(gh api "repos/${repository}/collaborators/${reviewer}/permission" --jq '.permission')"
+  case "${permission}" in
+    admin|maintain|write)
+      ;;
+    *)
+      echo "Reviewer ${reviewer} must have write, maintain, or admin permission." >&2
+      exit 1
+      ;;
+  esac
+
+  if ! gh api \
+    --header "Accept: application/vnd.github.raw+json" \
+    "repos/${repository}/contents/.github/CODEOWNERS?ref=${branch}" | grep --fixed-strings --quiet "@${reviewer}"; then
+    echo "Reviewer @${reviewer} must exist in CODEOWNERS on ${branch} before enabling the gate." >&2
     exit 1
   fi
 }
@@ -81,6 +109,27 @@ JSON
     echo "CODEOWNERS approval remains disabled until a distinct reviewer is assigned."
     verify_protection
     ;;
+  apply-review-gate)
+    require_github_auth
+    require_repository_admin
+    require_independent_reviewer
+    cat <<'JSON' | gh api \
+      --method PATCH \
+      --header "Accept: application/vnd.github+json" \
+      --header "X-GitHub-Api-Version: 2022-11-28" \
+      "${protection_endpoint}/required_pull_request_reviews" \
+      --input - >/dev/null
+{
+  "dismiss_stale_reviews": true,
+  "require_code_owner_reviews": true,
+  "required_approving_review_count": 1,
+  "require_last_push_approval": true
+}
+JSON
+    echo "Required approval and CODEOWNERS review enabled on ${repository}:${branch}."
+    echo "Independent reviewer: @${reviewer}."
+    verify_protection
+    ;;
   help|-h|--help)
     cat <<'EOF'
 Usage: ./scripts/github-protection.sh <command>
@@ -88,14 +137,16 @@ Usage: ./scripts/github-protection.sh <command>
 Commands:
   verify           Read and print the current branch protection configuration
   apply-bootstrap  Require PR flow and CI without requiring self-approval
+  apply-review-gate Require one independent CODEOWNER approval
   help             Show this help
 
 Environment:
   GITHUB_REPOSITORY         owner/repository (default: residoken-wq/erp-preschool)
   GITHUB_PROTECTED_BRANCH   branch name (default: main)
+  GITHUB_REVIEWER           independent reviewer (default: phamhanghula-ui)
 
-The bootstrap mode deliberately does not enable required CODEOWNERS approval.
-Add a distinct, verified reviewer before enabling that G0 requirement.
+Run apply-review-gate only after the independent reviewer is present in CODEOWNERS
+on the protected branch.
 EOF
     ;;
   *)

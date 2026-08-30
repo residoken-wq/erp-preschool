@@ -33,7 +33,7 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
       lint, typecheck, 11 unit tests, build và API smoke;
     - job `compose-config` PASS: `docker compose config --quiet`.
 
-- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`IN PROGRESS — PARTIAL PASS`)
+- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`IN PROGRESS — REVIEWER VERIFIED`)
   - Owner role: Repository Owner.
   - Dependency: tên GitHub team/user và NS-002.
   - Applied evidence ngày 30/08/2026:
@@ -44,9 +44,10 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
     - [CI run 33294895595](https://github.com/residoken-wq/erp-preschool/actions/runs/33294895595)
       cho commit `57bd3d5b7c9c50550c90838d0427d33fe37f2ae2` PASS;
     - `scripts/github-protection.sh` cung cấp bootstrap/verify command.
-  - Remaining blocker: repository chỉ có một collaborator. Required approval và
-    CODEOWNERS review cố ý để `0`/tắt nhằm tránh self-approval deadlock; cần thêm
-    reviewer khác biệt cho Product/Security/Privacy/Data/Architecture.
+  - Reviewer update: `@phamhanghula-ui` đã được GitHub API xác minh là direct
+    collaborator quyền `write`; CODEOWNERS/review-gate change phải merge trước khi
+    bật required approval. Việc này chưa gán vai trò Product/Security/Privacy/Data/
+    Architecture cho collaborator.
   - Required: PR-only `main`, required CI, required review, no force-push/delete,
     Security/Privacy review cho HRI/auth/finance/AI.
   - Evidence còn thiếu để COMPLETE: reviewer handles thật; approval count `>=1`;

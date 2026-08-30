@@ -1,9 +1,7 @@
-# Bootstrap owner verified from the repository path on GitHub. This establishes a
-# valid fallback owner; it does not assign Product, Security, Privacy/Data, or
-# Architecture governance roles.
-* @residoken-wq
+# Fallback owners verified as direct repository collaborators. This establishes an
+# independent technical review path; it does not assign Product, Security,
+# Privacy/Data, or Architecture governance roles.
+* @residoken-wq @phamhanghula-ui
 
-# Do not enable required CODEOWNERS approval while this is the only owner: an
-# author cannot approve their own pull request. Add verified, distinct teams/users
-# for database, API/auth/HRI, governance, and domain paths before enabling that
-# requirement.
+# Domain-specific teams/users for database, API/auth/HRI, governance, and domain
+# paths remain required after the corresponding governance roles are approved.
