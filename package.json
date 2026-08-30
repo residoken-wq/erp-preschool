@@ -24,6 +24,8 @@
     "local:status": "bash scripts/local-services.sh status",
     "local:logs": "bash scripts/local-services.sh logs",
     "local:stop": "bash scripts/local-services.sh stop",
+    "github:protection:verify": "bash scripts/github-protection.sh verify",
+    "github:protection:bootstrap": "bash scripts/github-protection.sh apply-bootstrap",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down"
   },

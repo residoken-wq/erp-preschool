@@ -25,6 +25,25 @@ không được dùng làm source.
 protection và tên GitHub team đang chờ repository owner cấu hình; CODEOWNERS không
 tự suy đoán handle.
 
+## Branch protection bootstrap
+
+`@residoken-wq` là fallback CODEOWNER đã xác minh từ repository path. Đây không
+phải là quyết định gán các vai trò Product/Security/Privacy/Data/Architecture.
+Không bật required CODEOWNERS approval khi đây là owner duy nhất, vì tác giả không
+thể approve pull request của chính mình.
+
+Sau khi `gh auth login -h github.com` thành công, repository owner có thể chạy:
+
+```bash
+./scripts/github-protection.sh apply-bootstrap
+./scripts/github-protection.sh verify
+```
+
+Bootstrap yêu cầu nhánh cập nhật với hai CI context `quality` và `compose-config`,
+PR flow, linear history, conversation resolution; cấm force-push/delete và áp dụng
+cho administrator. Approval count/code-owner review chỉ được nâng lên sau khi có
+ít nhất một reviewer khác biệt, có handle được xác minh và role được phê duyệt.
+
 ## Version và release
 
 - Release chỉ được cắt từ `main` sau exit gate; tag theo SemVer khi versioning được
@@ -39,4 +58,3 @@ tự suy đoán handle.
 PR, CI logs đã redaction, test report, migration evidence, approval và release note
 là evidence. Thời hạn lưu evidence là policy chưa chốt trong Decision Register;
 không dùng giá trị ví dụ làm mặc định production.
-

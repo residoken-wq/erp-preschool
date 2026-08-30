@@ -1,10 +1,9 @@
-# Phase 0 template. Repository owner must replace TBD roles with real GitHub
-# teams/users before enabling required CODEOWNERS review. Handles are deliberately
-# not invented in this repository.
-#
-# *                         @TBD-product @TBD-engineering
-# /database/                @TBD-data @TBD-security
-# /apps/api/                @TBD-backend @TBD-security
-# /docs/governance/         @TBD-product @TBD-architecture @TBD-security
-# /packages/domain/         @TBD-domain @TBD-backend
+# Bootstrap owner verified from the repository path on GitHub. This establishes a
+# valid fallback owner; it does not assign Product, Security, Privacy/Data, or
+# Architecture governance roles.
+* @residoken-wq
 
+# Do not enable required CODEOWNERS approval while this is the only owner: an
+# author cannot approve their own pull request. Add verified, distinct teams/users
+# for database, API/auth/HRI, governance, and domain paths before enabling that
+# requirement.

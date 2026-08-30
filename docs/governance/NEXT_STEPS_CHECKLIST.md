@@ -33,12 +33,15 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
       lint, typecheck, 11 unit tests, build và API smoke;
     - job `compose-config` PASS: `docker compose config --quiet`.
 
-- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`NEXT — BLOCKED`)
+- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`IN PROGRESS — BLOCKED APPLY`)
   - Owner role: Repository Owner.
   - Dependency: tên GitHub team/user và NS-002.
   - Blocker: GitHub CLI token của `residoken-wq` không hợp lệ; API branch
-    protection trả `401 Requires authentication`; CODEOWNERS vẫn là template có
-    comment `@TBD`, chưa có handle có thể xác minh.
+    protection trả `401 Requires authentication`; chưa có reviewer khác biệt cho
+    Product/Security/Privacy/Data/Architecture.
+  - Partial evidence: `.github/CODEOWNERS` có verified fallback
+    `@residoken-wq`; `scripts/github-protection.sh` có bootstrap/verify command.
+    Required CODEOWNERS approval cố ý chưa bật để tránh self-approval deadlock.
   - Required: PR-only `main`, required CI, required review, no force-push/delete,
     Security/Privacy review cho HRI/auth/finance/AI.
   - Evidence: exported setting/screenshot không chứa secret và CODEOWNERS hợp lệ.
