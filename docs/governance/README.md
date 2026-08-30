@@ -5,6 +5,7 @@
 | `SOURCE_PROMOTION_MANIFEST.md` | canonical source inventory/checksum evidence |
 | `PHASE_0_GATE_G0.md` | current gate status, executed checks và blockers |
 | `PROGRAM_GOVERNANCE.md` | required owner roles, cadence, approval rules |
+| `NS004_GOVERNANCE_NOMINATION.md` | public-safe owner nomination and pilot scope evidence form |
 | `REPOSITORY_GOVERNANCE.md` | branch/PR/release/evidence policy |
 | `DECISION_REGISTER.md` | open architecture/business/vendor decisions |
 | `CANONICAL_SOP_REGISTER.md` | 28 canonical SOP IDs và lifecycle baseline |

@@ -18,6 +18,10 @@
 Không có tên cá nhân nào được suy đoán. Product Sponsor phải chỉ định role owner
 trước khi Gate G0 được ký đạt.
 
+Nomination, acceptance, public-repository privacy rules và pilot scope được thu
+thập tại `NS004_GOVERNANCE_NOMINATION.md`. GitHub collaborator/CODEOWNER chỉ là
+technical reviewer, không tự động trở thành governance owner.
+
 ## Nhịp quản trị đề xuất
 
 - Weekly delivery: backlog, blocker, decision due, evidence.
@@ -33,4 +37,3 @@ trước khi Gate G0 được ký đạt.
 - “TBD/OPEN” không được hiểu là đồng ý ngầm.
 - Approval phải lưu actor, role, timestamp, version, scope và bằng chứng.
 - Phase sau không bắt đầu chỉ dựa trên ngày; phải có exit evidence và sign-off.
-
