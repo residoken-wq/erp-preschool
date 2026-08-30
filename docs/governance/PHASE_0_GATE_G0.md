@@ -41,6 +41,7 @@
 | Cleanup | stack stopped; volumes giữ lại, không xóa dữ liệu test |
 | Git baseline | PASS local: root commit `b533f750ab9538d5ff48ed7c979947cbeebe128f`, 230 files |
 | Remote clean-checkout CI | PASS: `origin/main` commit `21e5f42ae74d35c45393b8f63eae96a9a7a665ab`; [run 33293376641](https://github.com/residoken-wq/erp-preschool/actions/runs/33293376641); jobs `quality` và `compose-config` |
+| Local restart lifecycle | PASS: `scripts/local-services.sh` stop/start giữ volumes; migration/seed idempotent; API/Web ready; smoke PASS |
 
 Smoke bao gồm health/security headers, context/dashboard/list, create lead, missing
 permission `403`, duplicate `409`, invalid transition `409` và audit-chain integrity.

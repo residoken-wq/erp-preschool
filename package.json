@@ -18,6 +18,12 @@
     "db:reset:dev": "node scripts/reset-dev.mjs",
     "smoke": "node scripts/smoke.mjs",
     "pilot:gate": "node scripts/pilot-gate.mjs",
+    "local:start": "bash scripts/local-services.sh start",
+    "local:rebuild": "bash scripts/local-services.sh rebuild",
+    "local:restart": "bash scripts/local-services.sh restart",
+    "local:status": "bash scripts/local-services.sh status",
+    "local:logs": "bash scripts/local-services.sh logs",
+    "local:stop": "bash scripts/local-services.sh stop",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down"
   },

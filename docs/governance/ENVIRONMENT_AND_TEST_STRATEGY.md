@@ -22,3 +22,10 @@ CI dùng frozen lockfile và synthetic seed. Staging/production phải fail star
 còn `AUTH_MODE=development`, fake actor hoặc wildcard permission. Thời hạn lưu test
 evidence và performance/RPO/RTO target phụ thuộc Decision Register.
 
+## Local service lifecycle
+
+Từ application root, dùng `./scripts/local-services.sh start` sau khi máy hoặc
+Docker daemon restart. Lệnh chạy migration/seed idempotent, chờ API/Web ready và
+không xóa PostgreSQL/MinIO volumes. Dùng `rebuild` sau khi source hoặc dependency
+thay đổi; `status`, `logs`, `restart` và `stop` phục vụ vận hành local. Trước G1,
+mọi lần chạy chỉ được dùng synthetic/de-identified data.

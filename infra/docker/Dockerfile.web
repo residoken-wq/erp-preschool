@@ -9,7 +9,9 @@ RUN pnpm --filter @sop-os/web build
 FROM node:22.18-alpine
 WORKDIR /app
 ENV NODE_ENV=production
-RUN corepack enable
-COPY --from=build /app /app
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+COPY --from=build /app/apps/web/.next/standalone ./
+COPY --from=build /app/apps/web/.next/static ./apps/web/.next/static
 EXPOSE 3000
-CMD ["pnpm", "--filter", "@sop-os/web", "start"]
+CMD ["node", "apps/web/server.js"]

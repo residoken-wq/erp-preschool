@@ -27,12 +27,31 @@ chỉ đọc; không phát triển song song ở đó.
 
 ```bash
 cp .env.example .env
-docker compose up -d --build
+./scripts/local-services.sh start
 ```
 
 - Web: http://localhost:3000
 - API health: http://localhost:3001/api/v1/health
 - MinIO console: http://localhost:9001
+
+Sau khi restart máy, chạy lại từ application root:
+
+```bash
+./scripts/local-services.sh start
+```
+
+Các lệnh vận hành local không xóa volume dữ liệu:
+
+```bash
+./scripts/local-services.sh status
+./scripts/local-services.sh logs
+./scripts/local-services.sh restart
+./scripts/local-services.sh rebuild  # dùng sau khi source/dependency thay đổi
+./scripts/local-services.sh stop
+```
+
+Có thể dùng alias pnpm tương ứng: `pnpm local:start`, `pnpm local:rebuild`,
+`pnpm local:status`, `pnpm local:logs`, `pnpm local:restart` và `pnpm local:stop`.
 
 ## Chạy development
 
