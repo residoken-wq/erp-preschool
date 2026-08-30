@@ -33,25 +33,29 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
       lint, typecheck, 11 unit tests, build và API smoke;
     - job `compose-config` PASS: `docker compose config --quiet`.
 
-- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`IN PROGRESS — REVIEWER VERIFIED`)
+- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`TECHNICAL PASS — DOMAIN OWNERS PENDING`)
   - Owner role: Repository Owner.
   - Dependency: tên GitHub team/user và NS-002.
   - Applied evidence ngày 30/08/2026:
-    - `.github/CODEOWNERS` có verified fallback `@residoken-wq`;
+    - `.github/CODEOWNERS` có verified fallback `@residoken-wq` và independent
+      technical reviewer `@phamhanghula-ui`;
     - GitHub API xác nhận `main` yêu cầu strict checks `quality` và
       `compose-config`, PR flow, linear history, conversation resolution và áp
       dụng administrator; force-push/delete đều tắt;
     - [CI run 33294895595](https://github.com/residoken-wq/erp-preschool/actions/runs/33294895595)
       cho commit `57bd3d5b7c9c50550c90838d0427d33fe37f2ae2` PASS;
-    - `scripts/github-protection.sh` cung cấp bootstrap/verify command.
-  - Reviewer update: `@phamhanghula-ui` đã được GitHub API xác minh là direct
-    collaborator quyền `write`; CODEOWNERS/review-gate change phải merge trước khi
-    bật required approval. Việc này chưa gán vai trò Product/Security/Privacy/Data/
-    Architecture cho collaborator.
+    - [PR #10](https://github.com/residoken-wq/erp-preschool/pull/10) đưa independent
+      reviewer vào CODEOWNERS qua required CI; merge commit `89dbedc`;
+    - GitHub API sau merge xác nhận required approval `1`, required CODEOWNERS
+      review, dismiss stale review và require last-push approval đều bật;
+    - `scripts/github-protection.sh` cung cấp bootstrap/review-gate/verify command.
+  - Governance note: `@phamhanghula-ui` đã được GitHub API xác minh là direct
+    collaborator quyền `write`, nhưng chưa được gán vai trò Product/Security/
+    Privacy/Data/Architecture.
   - Required: PR-only `main`, required CI, required review, no force-push/delete,
     Security/Privacy review cho HRI/auth/finance/AI.
-  - Evidence còn thiếu để COMPLETE: reviewer handles thật; approval count `>=1`;
-    required CODEOWNERS review bật và API verify sau thay đổi.
+  - Evidence còn thiếu để COMPLETE: approved Security/Privacy/domain owner handles
+    và path-specific CODEOWNERS mapping cho HRI/auth/finance/AI.
 
 - [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`BLOCKED`)
   - Owner role: Executive Sponsor.
