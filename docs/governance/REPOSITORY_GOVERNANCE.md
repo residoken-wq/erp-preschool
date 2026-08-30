@@ -27,22 +27,22 @@ tự suy đoán handle.
 
 ## Branch protection bootstrap
 
-`@residoken-wq` là fallback CODEOWNER đã xác minh từ repository path. Đây không
-phải là quyết định gán các vai trò Product/Security/Privacy/Data/Architecture.
-Không bật required CODEOWNERS approval khi đây là owner duy nhất, vì tác giả không
-thể approve pull request của chính mình.
+`@residoken-wq` và `@phamhanghula-ui` là direct collaborators đã xác minh, tạo
+fallback technical review độc lập. Đây không phải là quyết định gán các vai trò
+Product/Security/Privacy/Data/Architecture.
 
 Sau khi `gh auth login -h github.com` thành công, repository owner có thể chạy:
 
 ```bash
 ./scripts/github-protection.sh apply-bootstrap
+./scripts/github-protection.sh apply-review-gate
 ./scripts/github-protection.sh verify
 ```
 
 Bootstrap yêu cầu nhánh cập nhật với hai CI context `quality` và `compose-config`,
 PR flow, linear history, conversation resolution; cấm force-push/delete và áp dụng
-cho administrator. Approval count/code-owner review chỉ được nâng lên sau khi có
-ít nhất một reviewer khác biệt, có handle được xác minh và role được phê duyệt.
+cho administrator. Review gate yêu cầu một approval, CODEOWNERS review, dismiss
+stale review và người approve khác người thực hiện lần push cuối.
 
 ## Version và release
 
