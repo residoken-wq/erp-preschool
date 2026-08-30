@@ -33,18 +33,24 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
       lint, typecheck, 11 unit tests, build và API smoke;
     - job `compose-config` PASS: `docker compose config --quiet`.
 
-- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`IN PROGRESS — BLOCKED APPLY`)
+- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`IN PROGRESS — PARTIAL PASS`)
   - Owner role: Repository Owner.
   - Dependency: tên GitHub team/user và NS-002.
-  - Blocker: GitHub CLI token của `residoken-wq` không hợp lệ; API branch
-    protection trả `401 Requires authentication`; chưa có reviewer khác biệt cho
-    Product/Security/Privacy/Data/Architecture.
-  - Partial evidence: `.github/CODEOWNERS` có verified fallback
-    `@residoken-wq`; `scripts/github-protection.sh` có bootstrap/verify command.
-    Required CODEOWNERS approval cố ý chưa bật để tránh self-approval deadlock.
+  - Applied evidence ngày 30/08/2026:
+    - `.github/CODEOWNERS` có verified fallback `@residoken-wq`;
+    - GitHub API xác nhận `main` yêu cầu strict checks `quality` và
+      `compose-config`, PR flow, linear history, conversation resolution và áp
+      dụng administrator; force-push/delete đều tắt;
+    - [CI run 33294895595](https://github.com/residoken-wq/erp-preschool/actions/runs/33294895595)
+      cho commit `57bd3d5b7c9c50550c90838d0427d33fe37f2ae2` PASS;
+    - `scripts/github-protection.sh` cung cấp bootstrap/verify command.
+  - Remaining blocker: repository chỉ có một collaborator. Required approval và
+    CODEOWNERS review cố ý để `0`/tắt nhằm tránh self-approval deadlock; cần thêm
+    reviewer khác biệt cho Product/Security/Privacy/Data/Architecture.
   - Required: PR-only `main`, required CI, required review, no force-push/delete,
     Security/Privacy review cho HRI/auth/finance/AI.
-  - Evidence: exported setting/screenshot không chứa secret và CODEOWNERS hợp lệ.
+  - Evidence còn thiếu để COMPLETE: reviewer handles thật; approval count `>=1`;
+    required CODEOWNERS review bật và API verify sau thay đổi.
 
 - [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`BLOCKED`)
   - Owner role: Executive Sponsor.
