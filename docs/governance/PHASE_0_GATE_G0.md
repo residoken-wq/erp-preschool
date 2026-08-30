@@ -6,7 +6,7 @@
 | Exit criterion | Evidence | Status |
 |---|---|---|
 | Một canonical source | Source Promotion Manifest: 90/90 checksum match | PASS |
-| CI từ clean checkout | frozen CI configured; local equivalent gates PASS; remote clean-checkout run cần initial commit/CI | IN PROGRESS |
+| CI từ clean checkout | local baseline commit `b533f75`; frozen local gates PASS; remote clean-checkout CI chưa chạy | IN PROGRESS |
 | Named Product/Security/Data/Pilot owners | Program Governance | BLOCKED — DEC-001/002 |
 | 28 SOP mapped/deduplicated | Canonical SOP Register; source count discrepancy recorded | PASS baseline; approval pending |
 | Decision Register có owner/deadline | role owner và gate recorded | PASS baseline; named owners pending |
@@ -40,6 +40,7 @@
 | Docker image builds | PASS: migrate/API/worker/web với frozen lockfile |
 | Full container stack | API/PostgreSQL healthy; Web/Worker/MinIO running; smoke PASS |
 | Cleanup | stack stopped; volumes giữ lại, không xóa dữ liệu test |
+| Git baseline | PASS local: root commit `b533f750ab9538d5ff48ed7c979947cbeebe128f`, 230 files |
 
 Smoke bao gồm health/security headers, context/dashboard/list, create lead, missing
 permission `403`, duplicate `409`, invalid transition `409` và audit-chain integrity.

@@ -6,14 +6,22 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
 
 ## A. Đóng Gate G0
 
-- [ ] **NS-001 — Tạo Git baseline canonical** (`IN PROGRESS`)
+- [x] **NS-001 — Tạo Git baseline canonical** (`COMPLETE`)
   - Owner role: Engineering Lead.
   - Việc làm: kiểm tra remote history, ignore, artifact, secret, inventory; tạo
     initial commit từ canonical root.
-  - Evidence: commit SHA, file/count/size inventory, preflight result.
+  - Evidence:
+    - root commit `b533f750ab9538d5ff48ed7c979947cbeebe128f`;
+    - tree `15138b5f619bce2347461a4e28c9f51562e6c1e6`;
+    - 230 file, 2,543,926 byte, 41,454 dòng baseline;
+    - remote có URL nhưng chưa có branch; working tree sạch sau commit;
+    - không phát hiện private key/token pattern độ tin cậy cao;
+    - `.env`, `node_modules`, `.next`, `dist`, coverage và `tsbuildinfo` bị ignore.
+  - Whitespace note: baseline giữ nguyên whitespace của master SOP và archived
+    snapshot để không sửa artifact trong cùng promotion/history change.
   - Không push trong bước này; push là external change riêng tại NS-002.
 
-- [ ] **NS-002 — Push baseline và chạy remote CI clean checkout** (`PENDING`)
+- [ ] **NS-002 — Push baseline và chạy remote CI clean checkout** (`NEXT — PENDING AUTHORIZATION`)
   - Owner role: Repository Owner/Engineering Lead.
   - Dependency: NS-001 và quyền push GitHub.
   - Evidence: branch URL/commit SHA; frozen install, migrate/seed, lint, typecheck,
@@ -86,4 +94,3 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
 
 Một bước chỉ chuyển `IN PROGRESS` khi dependency đã đạt, owner có tên, acceptance
 và evidence path rõ. Không giảm auth, scope, test, audit hoặc validation để vượt gate.
-
