@@ -1,0 +1,10 @@
+# Phase 0 template. Repository owner must replace TBD roles with real GitHub
+# teams/users before enabling required CODEOWNERS review. Handles are deliberately
+# not invented in this repository.
+#
+# *                         @TBD-product @TBD-engineering
+# /database/                @TBD-data @TBD-security
+# /apps/api/                @TBD-backend @TBD-security
+# /docs/governance/         @TBD-product @TBD-architecture @TBD-security
+# /packages/domain/         @TBD-domain @TBD-backend
+

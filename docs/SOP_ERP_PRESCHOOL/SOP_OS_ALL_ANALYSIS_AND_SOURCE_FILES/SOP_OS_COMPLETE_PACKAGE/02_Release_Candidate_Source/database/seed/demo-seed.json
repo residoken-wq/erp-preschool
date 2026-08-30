@@ -1,0 +1,40 @@
+{
+  "organization": {
+    "id": "00000000-0000-7000-8000-000000000001",
+    "code": "DEMO-SCHOOL",
+    "name": "Trường Mầm non Demo",
+    "default_timezone": "Asia/Ho_Chi_Minh",
+    "default_locale": "vi-VN",
+    "status": "ACTIVE"
+  },
+  "campuses": [
+    {"id": "00000000-0000-7000-8000-000000000101", "code": "CENTRAL", "name": "Cơ sở Trung tâm", "status": "ACTIVE"},
+    {"id": "00000000-0000-7000-8000-000000000102", "code": "EAST", "name": "Cơ sở Phía Đông", "status": "ACTIVE"}
+  ],
+  "roles": [
+    {"code": "ADMISSION_OFFICER", "name": "Admission Officer"},
+    {"code": "ADMISSION_MANAGER", "name": "Admission Manager"},
+    {"code": "ACADEMIC_MANAGER", "name": "Academic Manager"},
+    {"code": "FINANCE_MANAGER", "name": "Finance Manager"},
+    {"code": "AUDITOR", "name": "Auditor"},
+    {"code": "SYSTEM_ADMIN", "name": "System Administrator"}
+  ],
+  "demo_users": [
+    {"id": "00000000-0000-7000-8000-000000001001", "email": "admission.manager@example.test", "display_name": "Nguyễn Minh Anh", "roles": ["ADMISSION_MANAGER"], "campuses": ["CENTRAL", "EAST"]},
+    {"id": "00000000-0000-7000-8000-000000001002", "email": "admission.officer@example.test", "display_name": "Trần Thu Hà", "roles": ["ADMISSION_OFFICER"], "campuses": ["CENTRAL"]}
+  ],
+  "process_nodes": [
+    {"level": "L0", "code": "L0-03", "name": "Student Acquisition & Enrollment", "parent": null},
+    {"level": "L1", "code": "ADM", "name": "Admission Management", "parent": "L0-03"},
+    {"level": "L2", "code": "ADM-E2E-01", "name": "Lead-to-Enrollment", "parent": "ADM"},
+    {"level": "L3", "code": "ADM-001", "name": "Lead Intake & Qualification", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-004", "name": "Application Intake", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-010", "name": "Operational Handover", "parent": "ADM-E2E-01"}
+  ],
+  "sop_register": [
+    {"code": "ADM-001", "title": "Tiếp nhận và phân loại Lead", "owner_role": "ADMISSION_MANAGER", "type": "OPERATIONAL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-004", "title": "Tiếp nhận Application", "owner_role": "ADMISSION_MANAGER", "type": "OPERATIONAL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-010", "title": "Operational Handover", "owner_role": "ACADEMIC_MANAGER", "type": "CONTROL", "priority": "P0", "status": "PROPOSED"}
+  ]
+}
+

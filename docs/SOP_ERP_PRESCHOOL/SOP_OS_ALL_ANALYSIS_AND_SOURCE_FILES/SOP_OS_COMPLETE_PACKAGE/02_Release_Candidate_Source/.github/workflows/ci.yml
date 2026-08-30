@@ -1,0 +1,59 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: sop_os
+          POSTGRES_USER: sop_os
+          POSTGRES_PASSWORD: sop_os_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sop_os -d sop_os"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgresql://sop_os:sop_os_ci@localhost:5432/sop_os
+      APP_ORIGIN: http://localhost:3000
+      AUTH_MODE: development
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile=false
+      - run: pnpm db:migrate
+      - run: pnpm db:seed
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - name: API smoke test
+        run: |
+          pnpm --filter @sop-os/api start &
+          api_pid=$!
+          pnpm smoke
+          kill "$api_pid"
+
+  compose-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose config --quiet

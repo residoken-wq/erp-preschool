@@ -1,0 +1,316 @@
+{
+  "meta": {
+    "dataset_id": "seed-sop-os-mvp-v0.1",
+    "version": "0.1",
+    "purpose": "Development, demo and UAT only",
+    "contains_real_personal_data": false,
+    "default_locale": "vi-VN",
+    "default_timezone": "Asia/Ho_Chi_Minh",
+    "notes": [
+      "All names and contacts are synthetic.",
+      "Targets, approval thresholds and retention periods remain configurable/TBD.",
+      "Use deterministic IDs only in non-production seed environments."
+    ]
+  },
+  "organization": {
+    "id": "00000000-0000-7000-8000-000000000001",
+    "code": "DEMO-SCHOOL",
+    "name": "Trường Mầm non Demo",
+    "default_timezone": "Asia/Ho_Chi_Minh",
+    "default_locale": "vi-VN",
+    "status": "ACTIVE"
+  },
+  "campuses": [
+    {
+      "id": "00000000-0000-7000-8000-000000000101",
+      "code": "CENTRAL",
+      "name": "Cơ sở Trung tâm",
+      "status": "ACTIVE"
+    },
+    {
+      "id": "00000000-0000-7000-8000-000000000102",
+      "code": "EAST",
+      "name": "Cơ sở Phía Đông",
+      "status": "ACTIVE"
+    }
+  ],
+  "departments": [
+    {"code": "ADM", "name": "Admission", "campus_scope": "ORGANIZATION"},
+    {"code": "ACA", "name": "Academic", "campus_scope": "ORGANIZATION"},
+    {"code": "FIN", "name": "Finance", "campus_scope": "ORGANIZATION"},
+    {"code": "OPS", "name": "Operations", "campus_scope": "ORGANIZATION"},
+    {"code": "ITA", "name": "IT & Administration", "campus_scope": "ORGANIZATION"}
+  ],
+  "roles": [
+    {"code": "PRODUCT_OWNER", "name": "Product Owner"},
+    {"code": "PROCESS_OWNER", "name": "Process Owner"},
+    {"code": "SOP_AUTHOR", "name": "SOP Author"},
+    {"code": "SOP_REVIEWER", "name": "SOP Reviewer"},
+    {"code": "SOP_APPROVER", "name": "SOP Approver"},
+    {"code": "ADMISSION_OFFICER", "name": "Admission Officer"},
+    {"code": "ADMISSION_MANAGER", "name": "Admission Manager"},
+    {"code": "ACADEMIC_ASSESSOR", "name": "Academic Assessor"},
+    {"code": "ACADEMIC_MANAGER", "name": "Academic Manager"},
+    {"code": "FINANCE_OFFICER", "name": "Finance Officer"},
+    {"code": "FINANCE_MANAGER", "name": "Finance Manager"},
+    {"code": "PRINCIPAL", "name": "Principal"},
+    {"code": "AUDITOR", "name": "Auditor"},
+    {"code": "SYSTEM_ADMIN", "name": "System Administrator"}
+  ],
+  "demo_users": [
+    {
+      "id": "00000000-0000-7000-8000-000000001001",
+      "email": "admission.manager@example.test",
+      "display_name": "Nguyễn Minh Anh",
+      "roles": ["ADMISSION_MANAGER", "PROCESS_OWNER", "SOP_APPROVER"],
+      "campuses": ["CENTRAL", "EAST"]
+    },
+    {
+      "id": "00000000-0000-7000-8000-000000001002",
+      "email": "admission.officer@example.test",
+      "display_name": "Trần Thu Hà",
+      "roles": ["ADMISSION_OFFICER", "SOP_AUTHOR"],
+      "campuses": ["CENTRAL"]
+    },
+    {
+      "id": "00000000-0000-7000-8000-000000001003",
+      "email": "academic.manager@example.test",
+      "display_name": "Lê Hoàng Phúc",
+      "roles": ["ACADEMIC_MANAGER", "SOP_REVIEWER"],
+      "campuses": ["CENTRAL"]
+    },
+    {
+      "id": "00000000-0000-7000-8000-000000001004",
+      "email": "assessor@example.test",
+      "display_name": "Phạm Ngọc Lan",
+      "roles": ["ACADEMIC_ASSESSOR"],
+      "campuses": ["CENTRAL"]
+    },
+    {
+      "id": "00000000-0000-7000-8000-000000001005",
+      "email": "finance.manager@example.test",
+      "display_name": "Võ Thanh Bình",
+      "roles": ["FINANCE_MANAGER", "SOP_REVIEWER"],
+      "campuses": ["CENTRAL", "EAST"]
+    },
+    {
+      "id": "00000000-0000-7000-8000-000000001006",
+      "email": "principal@example.test",
+      "display_name": "Đặng Mai Hương",
+      "roles": ["PRINCIPAL", "SOP_APPROVER"],
+      "campuses": ["CENTRAL"]
+    },
+    {
+      "id": "00000000-0000-7000-8000-000000001007",
+      "email": "auditor@example.test",
+      "display_name": "Auditor Demo",
+      "roles": ["AUDITOR"],
+      "campuses": ["CENTRAL", "EAST"]
+    },
+    {
+      "id": "00000000-0000-7000-8000-000000001008",
+      "email": "admin@example.test",
+      "display_name": "System Admin Demo",
+      "roles": ["SYSTEM_ADMIN"],
+      "campuses": ["CENTRAL", "EAST"]
+    }
+  ],
+  "academic_master": {
+    "academic_years": [
+      {"code": "AY-2026-2027", "name": "Năm học 2026–2027", "start_date": "2026-08-01", "end_date": "2027-07-31"}
+    ],
+    "intakes": [
+      {"code": "INT-2026-09", "name": "Intake Tháng 09/2026", "academic_year": "AY-2026-2027", "start_date": "2026-09-05"}
+    ],
+    "programs": [
+      {"code": "TODDLER-2-3", "name": "Toddler 2–3", "age_min_months": 24, "age_max_months": 47},
+      {"code": "PRESCHOOL-3-4", "name": "Preschool 3–4", "age_min_months": 36, "age_max_months": 59},
+      {"code": "PRESCHOOL-4-5", "name": "Preschool 4–5", "age_min_months": 48, "age_max_months": 71}
+    ]
+  },
+  "process_nodes": [
+    {"level": "L0", "code": "L0-03", "name": "Student Acquisition & Enrollment", "parent": null},
+    {"level": "L1", "code": "ADM", "name": "Admission Management", "parent": "L0-03"},
+    {"level": "L2", "code": "ADM-E2E-01", "name": "Lead-to-Enrollment", "parent": "ADM"},
+    {"level": "L3", "code": "ADM-001", "name": "Lead Intake & Qualification", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-002", "name": "Consultation & Needs Assessment", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-003", "name": "School Tour Management", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-004", "name": "Application Intake", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-005", "name": "Document Verification", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-006", "name": "Student Assessment", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-007", "name": "Offer Management", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-008", "name": "Enrollment Confirmation", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-009", "name": "Contract & Fee Plan Setup", "parent": "ADM-E2E-01"},
+    {"level": "L3", "code": "ADM-010", "name": "Operational Handover", "parent": "ADM-E2E-01"}
+  ],
+  "sop_register": [
+    {"code": "ADM-001", "title": "Tiếp nhận và phân loại Lead", "owner_role": "ADMISSION_MANAGER", "type": "OPERATIONAL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-002", "title": "Tư vấn và ghi nhận nhu cầu", "owner_role": "ADMISSION_MANAGER", "type": "OPERATIONAL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-003", "title": "School Tour Management", "owner_role": "ADMISSION_MANAGER", "type": "OPERATIONAL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-004", "title": "Tiếp nhận Application", "owner_role": "ADMISSION_MANAGER", "type": "OPERATIONAL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-005", "title": "Kiểm tra hồ sơ nhập học", "owner_role": "ADMISSION_MANAGER", "type": "CONTROL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-006", "title": "Student Assessment", "owner_role": "ACADEMIC_MANAGER", "type": "CONTROL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-007", "title": "Offer Management", "owner_role": "ADMISSION_MANAGER", "type": "CONTROL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-008", "title": "Enrollment Confirmation", "owner_role": "ADMISSION_MANAGER", "type": "CONTROL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-009", "title": "Contract & Fee Plan Setup", "owner_role": "FINANCE_MANAGER", "type": "CONTROL", "priority": "P0", "status": "PROPOSED"},
+    {"code": "ADM-010", "title": "Operational Handover", "owner_role": "ACADEMIC_MANAGER", "type": "CONTROL", "priority": "P0", "status": "PROPOSED"}
+  ],
+  "lead_sources": ["WEBSITE", "REFERRAL", "WALK_IN", "HOTLINE", "CAMPAIGN", "IMPORT", "OTHER"],
+  "interaction_channels": ["PHONE", "EMAIL", "SMS", "ZALO", "IN_PERSON", "PORTAL", "OTHER"],
+  "close_reasons": [
+    {"code": "NO_FIT", "name": "Không phù hợp chương trình"},
+    {"code": "NO_RESPONSE", "name": "Không liên hệ được"},
+    {"code": "PRICE", "name": "Không phù hợp chi phí"},
+    {"code": "LOCATION", "name": "Không phù hợp địa điểm"},
+    {"code": "DUPLICATE", "name": "Lead trùng"},
+    {"code": "OTHER", "name": "Lý do khác"}
+  ],
+  "document_types": [
+    {"code": "APPLICATION_FORM", "name": "Application Form", "classification": "HRI"},
+    {"code": "BIRTH_CERTIFICATE", "name": "Giấy khai sinh", "classification": "HRI"},
+    {"code": "STUDENT_PHOTO", "name": "Ảnh học sinh", "classification": "HRI"},
+    {"code": "GUARDIAN_DECLARATION", "name": "Khai báo người giám hộ", "classification": "HRI"},
+    {"code": "DATA_CONSENT", "name": "Consent xử lý dữ liệu", "classification": "HRI"},
+    {"code": "SIGNED_CONTRACT", "name": "Hợp đồng đã ký", "classification": "HRI"}
+  ],
+  "application_checklist_templates": [
+    {
+      "code": "CHK-PRESCHOOL-CENTRAL-V1",
+      "version": 1,
+      "campus": "CENTRAL",
+      "programs": ["PRESCHOOL-3-4", "PRESCHOOL-4-5"],
+      "items": [
+        {"document_type": "APPLICATION_FORM", "required_state": "REQUIRED"},
+        {"document_type": "BIRTH_CERTIFICATE", "required_state": "REQUIRED"},
+        {"document_type": "STUDENT_PHOTO", "required_state": "REQUIRED"},
+        {"document_type": "GUARDIAN_DECLARATION", "required_state": "REQUIRED"},
+        {"document_type": "DATA_CONSENT", "required_state": "REQUIRED"}
+      ]
+    }
+  ],
+  "assessment_templates": [
+    {
+      "code": "ASM-PRESCHOOL-V1",
+      "version": 1,
+      "name": "Preschool Readiness Assessment",
+      "dimensions": ["communication", "social_interaction", "self_service", "learning_readiness"],
+      "status": "ACTIVE"
+    }
+  ],
+  "offer_templates": [
+    {"code": "OFFER-STANDARD-V1", "version": 1, "name": "Standard Admission Offer", "status": "ACTIVE", "default_valid_days": 7}
+  ],
+  "contract_templates": [
+    {"code": "CONTRACT-PRESCHOOL-V1", "version": 1, "name": "Preschool Enrollment Contract", "status": "ACTIVE"}
+  ],
+  "fee_schedules": [
+    {
+      "code": "FEE-PRESCHOOL-2026-V1",
+      "version": 1,
+      "currency": "VND",
+      "status": "ACTIVE",
+      "lines": [
+        {"fee_type": "TUITION", "description": "Học phí mẫu", "amount": 0, "amount_status": "TBD"},
+        {"fee_type": "ENROLLMENT", "description": "Phí nhập học mẫu", "amount": 0, "amount_status": "TBD"}
+      ]
+    }
+  ],
+  "handover_templates": [
+    {
+      "code": "HANDOVER-PRESCHOOL-V1",
+      "version": 1,
+      "items": [
+        {"key": "STUDENT_PROFILE", "label": "Student Profile", "required_state": "REQUIRED", "owner_role": "ADMISSION_OFFICER"},
+        {"key": "AUTHORIZED_PICKUP", "label": "Authorized Pickup", "required_state": "REQUIRED", "owner_role": "ADMISSION_OFFICER"},
+        {"key": "DATA_CONSENT", "label": "Data Consent", "required_state": "REQUIRED", "owner_role": "ADMISSION_OFFICER"},
+        {"key": "IMAGE_CONSENT", "label": "Image Consent", "required_state": "CONDITIONAL", "owner_role": "ADMISSION_OFFICER"},
+        {"key": "CONTRACT", "label": "Active Contract", "required_state": "REQUIRED", "owner_role": "FINANCE_OFFICER"},
+        {"key": "FEE_PLAN", "label": "Active Fee Plan", "required_state": "REQUIRED", "owner_role": "FINANCE_OFFICER"}
+      ]
+    }
+  ],
+  "test_persons": [
+    {"ref": "guardian-happy", "full_name": "Nguyễn Minh Demo", "email": "guardian.happy@example.test", "phone": "+84900000001", "data_classification": "HRI"},
+    {"ref": "student-happy", "full_name": "Nguyễn An Demo", "date_of_birth": "2022-03-15", "data_classification": "HRI"},
+    {"ref": "guardian-exception", "full_name": "Trần Thanh Demo", "email": "guardian.exception@example.test", "phone": "+84900000002", "data_classification": "HRI"},
+    {"ref": "student-exception", "full_name": "Trần Bình Demo", "date_of_birth": "2021-11-10", "data_classification": "HRI"}
+  ],
+  "test_journeys": [
+    {
+      "journey_id": "JRN-HAPPY-001",
+      "name": "Happy path Lead-to-Enrollment",
+      "campus": "CENTRAL",
+      "program": "PRESCHOOL-4-5",
+      "intake": "INT-2026-09",
+      "actors": {"guardian": "guardian-happy", "student": "student-happy", "officer": "admission.officer@example.test"},
+      "steps": [
+        {"sop": "ADM-001", "command": "CreateLead", "expected_status": "NEW"},
+        {"sop": "ADM-001", "command": "AssignLead", "expected_status": "ASSIGNED"},
+        {"sop": "ADM-002", "command": "RecordInteraction", "expected_status": "CONTACTED"},
+        {"sop": "ADM-002", "command": "QualifyLead", "expected_status": "QUALIFIED"},
+        {"sop": "ADM-003", "command": "CompleteSchoolTour", "expected_status": "COMPLETED"},
+        {"sop": "ADM-004", "command": "SubmitApplication", "expected_status": "SUBMITTED"},
+        {"sop": "ADM-005", "command": "VerifyDocuments", "expected_status": "VERIFIED"},
+        {"sop": "ADM-006", "command": "FinalizeAssessment", "expected_status": "COMPLETED"},
+        {"sop": "ADM-007", "command": "IssueOffer", "expected_status": "ISSUED"},
+        {"sop": "ADM-007", "command": "AcceptOffer", "expected_status": "ACCEPTED"},
+        {"sop": "ADM-008", "command": "ConfirmEnrollment", "expected_status": "CONFIRMED"},
+        {"sop": "ADM-009", "command": "ActivateContractAndFeePlan", "expected_status": "ACTIVE"},
+        {"sop": "ADM-010", "command": "AcceptHandover", "expected_status": "ACCEPTED"}
+      ]
+    },
+    {
+      "journey_id": "JRN-DOC-EXCEPTION-001",
+      "name": "Application thiếu giấy khai sinh và bổ sung lại",
+      "campus": "CENTRAL",
+      "program": "PRESCHOOL-4-5",
+      "actors": {"guardian": "guardian-exception", "student": "student-exception"},
+      "steps": [
+        {"sop": "ADM-004", "command": "SubmitApplication", "expected_status": "SUBMITTED"},
+        {"sop": "ADM-005", "command": "MarkApplicationIncomplete", "reason": "BIRTH_CERTIFICATE_MISSING", "expected_status": "INCOMPLETE"},
+        {"sop": "ADM-005", "command": "UploadApplicationDocument", "document_type": "BIRTH_CERTIFICATE", "expected_document_status": "SUBMITTED"},
+        {"sop": "ADM-005", "command": "VerifyDocument", "expected_document_status": "VERIFIED"},
+        {"sop": "ADM-005", "command": "MarkApplicationVerified", "expected_status": "VERIFIED"}
+      ]
+    },
+    {
+      "journey_id": "JRN-OFFER-EXPIRED-001",
+      "name": "Offer hết hạn và reissue",
+      "steps": [
+        {"sop": "ADM-007", "command": "IssueOffer", "expected_status": "ISSUED"},
+        {"sop": "ADM-007", "command": "ExpireOffer", "expected_status": "EXPIRED"},
+        {"sop": "ADM-007", "command": "AcceptOffer", "expected_error": "OFFER_EXPIRED"},
+        {"sop": "ADM-007", "command": "ReissueOffer", "expected_status": "ISSUED", "assertion": "new_version_and_lineage_created"}
+      ]
+    },
+    {
+      "journey_id": "JRN-HANDOVER-RETURN-001",
+      "name": "Handover bị trả lại vì thiếu consent",
+      "steps": [
+        {"sop": "ADM-010", "command": "PrepareHandover", "expected_status": "NOT_READY"},
+        {"sop": "ADM-010", "command": "SubmitHandover", "expected_error": "REQUIRED_ITEM_MISSING"},
+        {"sop": "ADM-010", "command": "CompleteHandoverItem", "item": "DATA_CONSENT", "expected_item_status": "COMPLETED"},
+        {"sop": "ADM-010", "command": "SubmitHandover", "expected_status": "SUBMITTED"},
+        {"sop": "ADM-010", "command": "ReturnHandover", "reason": "IMAGE_CONSENT_REVIEW", "expected_status": "RETURNED_FOR_COMPLETION"},
+        {"sop": "ADM-010", "command": "ResubmitHandover", "expected_status": "SUBMITTED"},
+        {"sop": "ADM-010", "command": "AcceptHandover", "expected_status": "ACCEPTED"}
+      ]
+    },
+    {
+      "journey_id": "JRN-SECURITY-001",
+      "name": "Cross-campus access denial",
+      "steps": [
+        {"actor": "admission.officer@example.test", "campus_scope": "CENTRAL", "command": "GetApplication", "target_campus": "EAST", "expected_error": "NOT_FOUND_OR_FORBIDDEN"},
+        {"actor": "admin@example.test", "command": "GetAssessmentNarrative", "expected_error": "FIELD_PERMISSION_REQUIRED"},
+        {"actor": "auditor@example.test", "command": "ExportAudit", "reason": null, "expected_error": "REASON_REQUIRED"}
+      ]
+    }
+  ],
+  "uat_assertions": [
+    {"id": "UAT-AUD-001", "assertion": "Every privileged transition creates one audit event with actor, before, after, reason and correlation_id."},
+    {"id": "UAT-IDEMP-001", "assertion": "Repeated command with the same idempotency key does not create duplicate Offer, Enrollment or Handover event."},
+    {"id": "UAT-SCOPE-001", "assertion": "A user cannot access a record outside organization/campus scope through UI or direct API."},
+    {"id": "UAT-VERSION-001", "assertion": "Effective SOP, finalized Assessment and active Contract cannot be edited directly."},
+    {"id": "UAT-FILE-001", "assertion": "A quarantined or unscanned document cannot be opened or linked as verified evidence."}
+  ]
+}
