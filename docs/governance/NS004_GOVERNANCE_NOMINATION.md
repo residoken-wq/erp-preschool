@@ -1,8 +1,12 @@
 # NS-004 — Governance Owner Nomination and Pilot Scope
 
-**Status:** AWAITING SPONSOR NOMINATION  
-**Decision links:** DEC-001, DEC-002  
+**Status:** AWAITING SPONSOR NOMINATION
+
+**Decision links:** DEC-001, DEC-002
+
 **Gate:** G0
+
+**Decision request:** [GitHub Issue #16](https://github.com/residoken-wq/erp-preschool/issues/16)
 
 Tài liệu này là form thu thập bằng chứng, không tự tạo authority. Một vai trò chỉ
 chuyển `ACCEPTED` khi có approval reference của Sponsor/người có thẩm quyền, ngày
@@ -70,4 +74,5 @@ NS-004 chỉ được đóng khi:
 Sponsor/người được ủy quyền cung cấp các giá trị đã duyệt qua kênh phù hợp. Người
 cập nhật repository phải đối chiếu evidence ID, loại bỏ dữ liệu cá nhân không cần
 thiết và mở PR. Approval trên PR là review kỹ thuật/evidence; không thay thế biên
-bản bổ nhiệm hoặc quyết định Sponsor.
+bản bổ nhiệm hoặc quyết định Sponsor. Issue #16 là intake tracker public-safe;
+comment trên issue cũng không tự trở thành approval nếu thiếu authority/evidence.
