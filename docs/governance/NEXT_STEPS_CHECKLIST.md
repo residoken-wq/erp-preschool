@@ -61,7 +61,7 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
     khác vẫn bật. Bắt buộc chạy `apply-review-gate` trước product/production hoặc
     HRI thật; deferment không phải G0 approval.
 
-- [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`NEXT — NOMINATION REQUIRED`)
+- [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`PARTIAL — INDEPENDENT REVIEW + SCOPE DISPOSITION REQUIRED`)
   - Owner role: Executive Sponsor.
   - Required: Product Owner, Security Owner, Privacy/Data Owner, SOP Owner, Pilot
     Process Owner và campus pilot.
@@ -72,8 +72,15 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
   - Decision intake: [GitHub Issue #16](https://github.com/residoken-wq/erp-preschool/issues/16);
     issue không được đóng và task không chuyển `IN PROGRESS` nếu chưa có Sponsor
     authority, acceptance và evidence hợp lệ.
+  - Solo-founder evidence: `GOV-FOUNDER-2026-001`, effective 01/09/2026, accepted
+    roles and interim limitations recorded in the
+    [public declaration](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473520431).
+  - Path-specific CODEOWNERS maps the verified founder and technical reviewer;
+    `@phamhanghula-ui` is not a governance owner and DEC-022 remains active.
+  - Remaining: independent Security/Privacy reviewer; choose roadmap-baseline
+    pilot or approve expanded re-baseline; complete exclusions and SoD/rollback.
 
-- [ ] **NS-005 — Security/Privacy sign-off threat model** (`BLOCKED`)
+- [ ] **NS-005 — Security/Privacy sign-off threat model** (`BLOCKED — INDEPENDENT REVIEWER REQUIRED`)
   - Owner role: Security Owner + Privacy/Data Owner.
   - Review: `erp-preschool-threat-model.md`; xác nhận TM-001/TM-004 là release
     blocker và disposition cho toàn bộ threat `high`.

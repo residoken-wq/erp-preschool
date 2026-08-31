@@ -4,15 +4,15 @@
 
 | Vai trò | Trách nhiệm quyết định | Người/nhóm | Trạng thái |
 |---|---|---|---|
-| Executive Sponsor | ngân sách, risk acceptance, Go/No-Go | TBD | OPEN |
-| Product Owner | scope, priority, acceptance | TBD | OPEN |
-| Program/Delivery Lead | plan, dependency, evidence gate | TBD | OPEN |
-| SOP Governance Owner | canonical ID, lifecycle, publish | TBD | OPEN |
-| Security Owner | security control, exception/waiver | TBD | OPEN |
-| Privacy/DPO role | HRI purpose, transfer, retention | TBD | OPEN |
-| Solution Architect | ADR, boundary, NFR | TBD | OPEN |
-| Data Owner theo domain | classification, access, quality | TBD | OPEN |
-| Campus Pilot Owner | UAT, training, readiness | TBD | OPEN |
+| Executive Sponsor | ngân sách, risk acceptance, Go/No-Go | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
+| Product Owner | scope, priority, acceptance | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
+| Program/Delivery Lead | plan, dependency, evidence gate | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
+| SOP Governance Owner | canonical ID, lifecycle, publish | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
+| Security Owner | security control, exception/waiver | `@residoken-wq` | INTERIM — no self-sign-off/waiver |
+| Privacy/DPO role | HRI purpose, transfer, retention | `@residoken-wq` | INTERIM — no self-sign-off |
+| Solution Architect | ADR, boundary, NFR | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
+| Data Owner — Admission | classification, access, quality | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
+| Campus Pilot Owner | synthetic UAT planning and rollback | `@residoken-wq` | ACCEPTED — synthetic pilot only |
 | AI Governance Owner | AI use-case/risk/eval/kill switch | TBD | OPEN trước AI-0 |
 
 Không có tên cá nhân nào được suy đoán. Product Sponsor phải chỉ định role owner
@@ -21,6 +21,12 @@ trước khi Gate G0 được ký đạt.
 Nomination, acceptance, public-repository privacy rules và pilot scope được thu
 thập tại `NS004_GOVERNANCE_NOMINATION.md`. GitHub collaborator/CODEOWNER chỉ là
 technical reviewer, không tự động trở thành governance owner.
+
+Solo-founder authority is recorded by `GOV-FOUNDER-2026-001` and
+[Issue #16 declaration](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473520431).
+Combining accountable roles is permitted for this stage, but does not waive SoD:
+independent Security/Privacy sign-off, financial approval and high-risk waiver
+remain external/open controls.
 
 ## Nhịp quản trị đề xuất
 
