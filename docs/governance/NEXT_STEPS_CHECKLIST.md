@@ -69,6 +69,9 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
     non-sensitive approval evidence ID và effective date.
   - Input form: `NS004_GOVERNANCE_NOMINATION.md`; chỉ dùng public team/handle và
     non-sensitive approval evidence ID vì repository public.
+  - Decision intake: [GitHub Issue #16](https://github.com/residoken-wq/erp-preschool/issues/16);
+    issue không được đóng và task không chuyển `IN PROGRESS` nếu chưa có Sponsor
+    authority, acceptance và evidence hợp lệ.
 
 - [ ] **NS-005 — Security/Privacy sign-off threat model** (`BLOCKED`)
   - Owner role: Security Owner + Privacy/Data Owner.

@@ -6,8 +6,8 @@ ví dụ. Mỗi quyết định được chấp nhận phải tạo/cập nhật
 | ID | Quyết định cần chốt | Owner role | Hạn gate | Trạng thái | Ghi chú |
 |---|---|---|---|---|---|
 | DEC-000 | Root là application source canonical | Product/Architecture | G0 | APPROVED 30/08/2026 | Evidence: Source Promotion Manifest |
-| DEC-001 | Chỉ định program/domain/security/privacy owners | Sponsor | G0 | OPEN | Không suy đoán cá nhân |
-| DEC-002 | Pilot campus và phạm vi organization | Product/Sponsor | G0 | OPEN | Cần cho scope/UAT |
+| DEC-001 | Chỉ định program/domain/security/privacy owners | Sponsor | G0 | OPEN | Intake: GitHub Issue #16; không suy đoán cá nhân |
+| DEC-002 | Pilot campus và phạm vi organization | Product/Sponsor | G0 | OPEN | Intake: GitHub Issue #16; cần cho scope/UAT |
 | DEC-003 | Hosting model | Architecture/Security/Privacy | G1 | APPROVED 30/08/2026 | Hybrid; chi tiết topology ở DEC-021 |
 | DEC-004 | Enterprise IdP/OIDC, MFA và account lifecycle | Security/IT | G1 | OPEN | Development actor bị cấm ngoài local/test |
 | DEC-005 | PostgreSQL topology, HA, backup, RPO/RTO | Architecture/SRE | G1 | OPEN | Không tự gán RPO/RTO |
