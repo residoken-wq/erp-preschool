@@ -57,11 +57,14 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
   - Evidence còn thiếu để COMPLETE: approved Security/Privacy/domain owner handles
     và path-specific CODEOWNERS mapping cho HRI/auth/finance/AI.
 
-- [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`BLOCKED`)
+- [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`NEXT — NOMINATION REQUIRED`)
   - Owner role: Executive Sponsor.
   - Required: Product Owner, Security Owner, Privacy/Data Owner, SOP Owner, Pilot
     Process Owner và campus pilot.
-  - Evidence: cập nhật `PROGRAM_GOVERNANCE.md`, approver role/name và effective date.
+  - Evidence: cập nhật `PROGRAM_GOVERNANCE.md`, approved public team/handle,
+    non-sensitive approval evidence ID và effective date.
+  - Input form: `NS004_GOVERNANCE_NOMINATION.md`; chỉ dùng public team/handle và
+    non-sensitive approval evidence ID vì repository public.
 
 - [ ] **NS-005 — Security/Privacy sign-off threat model** (`BLOCKED`)
   - Owner role: Security Owner + Privacy/Data Owner.
