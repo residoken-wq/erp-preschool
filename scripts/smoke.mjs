@@ -42,9 +42,10 @@ await request('/applications');
 const lead = await request('/leads', {
   method: 'POST',
   body: JSON.stringify({
+    dataProvenance: 'synthetic',
     code: `LEAD-SMOKE-${suffix}`,
-    firstName: 'Smoke',
-    lastName: 'Test',
+    firstName: 'Synthetic-Smoke',
+    lastName: 'Synthetic-Test',
     email: `smoke.${suffix}@example.test`,
     sourceType: 'CI',
     campusId: '00000000-0000-7000-8000-000000000101'
@@ -54,11 +55,15 @@ if (lead.status !== 'NEW') throw new Error('Lead smoke invariant failed');
 await expectStatus('/leads', 403, {
   method: 'POST',
   headers: { 'x-permissions': 'lead:read' },
-  body: JSON.stringify({ code: `LEAD-DENIED-${suffix}`, firstName: 'Denied', lastName: 'Test', email: `denied.${suffix}@example.test`, sourceType: 'CI', campusId: '00000000-0000-7000-8000-000000000101' })
+  body: JSON.stringify({ dataProvenance: 'synthetic', code: `LEAD-DENIED-${suffix}`, firstName: 'Synthetic-Denied', lastName: 'Synthetic-Test', email: `denied.${suffix}@example.test`, sourceType: 'CI', campusId: '00000000-0000-7000-8000-000000000101' })
+});
+await expectStatus('/leads', 422, {
+  method: 'POST',
+  body: JSON.stringify({ dataProvenance: 'synthetic', code: `LEAD-REAL-${suffix}`, firstName: 'Real', lastName: 'Person', email: 'person@school.vn', sourceType: 'CI', campusId: '00000000-0000-7000-8000-000000000101' })
 });
 await expectStatus('/leads', 409, {
   method: 'POST',
-  body: JSON.stringify({ code: `LEAD-DUP-${suffix}`, firstName: 'Smoke', lastName: 'Duplicate', email: `smoke.${suffix}@example.test`, sourceType: 'CI', campusId: '00000000-0000-7000-8000-000000000101' })
+  body: JSON.stringify({ dataProvenance: 'synthetic', code: `LEAD-DUP-${suffix}`, firstName: 'Synthetic-Smoke', lastName: 'Synthetic-Duplicate', email: `smoke.${suffix}@example.test`, sourceType: 'CI', campusId: '00000000-0000-7000-8000-000000000101' })
 });
 await expectStatus(`/leads/${lead.id}/transitions`, 409, { method: 'POST', body: JSON.stringify({ to: 'CONVERTED' }) });
 const integrity = await request('/audit-integrity');

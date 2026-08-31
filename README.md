@@ -67,6 +67,7 @@ pnpm dev
 ## Quality gates
 
 ```bash
+pnpm data:guard
 pnpm lint
 pnpm typecheck
 pnpm test
@@ -86,15 +87,22 @@ Quy tắc thay đổi và các register Phase 0 nằm trong `AGENTS.md` và
 - Demo seed là dữ liệu tổng hợp; không copy production PII vào Dev/Test.
 - System Admin không tự động có quyền xem HRI.
 
-## Seed từ Bước 9
+## Data guard trước Gate G1
 
-`scripts/seed.mjs` nhận đường dẫn JSON tùy chọn:
+`pnpm db:seed` chỉ nhận JSON nằm dưới `database/seed`. Mỗi dataset phải có
+`_data_policy` hợp lệ theo `DEC-020`; CI chạy `pnpm data:guard` trước migration và
+seed. Symlink, file ngoài vùng seed, HRI thật, contact routable và de-identified
+data thiếu approval evidence đều bị từ chối.
 
 ```bash
-node scripts/seed.mjs docs/SOP_ERP_PRESCHOOL/SOP_OS_ALL_ANALYSIS_AND_SOURCE_FILES/SOP_OS_COMPLETE_PACKAGE/01_Analysis_Documents/SOP_OS_MVP_SEED_TEST_DATA.json
+pnpm data:guard
+pnpm db:seed
 ```
 
-Nếu không truyền, script dùng `database/seed/demo-seed.json`.
+API tạo Lead cũng fail-closed trước G1: request phải khai báo
+`dataProvenance=synthetic`, tên dùng prefix `Synthetic-`, email dùng domain example
+reserved và số điện thoại dùng range `+000`. Control này giảm nguy cơ nhập nhầm,
+nhưng không thay thế trách nhiệm không nhập dữ liệu người thật vào local/CI.
 
 ## Trạng thái Step 11
 

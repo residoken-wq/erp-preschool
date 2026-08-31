@@ -44,9 +44,11 @@
 | Remote clean-checkout CI | PASS: `origin/main` commit `21e5f42ae74d35c45393b8f63eae96a9a7a665ab`; [run 33293376641](https://github.com/residoken-wq/erp-preschool/actions/runs/33293376641); jobs `quality` và `compose-config` |
 | Local restart lifecycle | PASS: `scripts/local-services.sh` stop/start giữ volumes; migration/seed idempotent; API/Web ready; smoke PASS |
 | Repository protection | PARTIAL/DEFERRED (DEC-022): strict `quality`/`compose-config`, PR flow, admin enforcement, linear history, conversation resolution và force-push/delete controls active; required approval/CODEOWNERS review tạm tắt, phải bật lại trước product/production hoặc HRI thật |
+| DEC-020 data ingestion guard | PASS local 31/08/2026: CI + seed validator, registered provenance, path/symlink/contact fail-closed, Lead API `422` negative policy test; remote CI evidence pending PR |
 
 Smoke bao gồm health/security headers, context/dashboard/list, create lead, missing
-permission `403`, duplicate `409`, invalid transition `409` và audit-chain integrity.
+permission `403`, prohibited pre-G1 ingestion `422`, duplicate `409`, invalid
+transition `409` và audit-chain integrity.
 
 ## Lỗi baseline đã sửa trong Phase 0
 
