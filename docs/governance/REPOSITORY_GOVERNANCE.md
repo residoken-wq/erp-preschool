@@ -35,6 +35,8 @@ Sau khi `gh auth login -h github.com` thành công, repository owner có thể c
 
 ```bash
 ./scripts/github-protection.sh apply-bootstrap
+GITHUB_DEFER_REVIEW_GATE_CONFIRM=defer-until-product \
+  ./scripts/github-protection.sh defer-review-gate
 ./scripts/github-protection.sh apply-review-gate
 ./scripts/github-protection.sh verify
 ```
@@ -43,6 +45,12 @@ Bootstrap yêu cầu nhánh cập nhật với hai CI context `quality` và `com
 PR flow, linear history, conversation resolution; cấm force-push/delete và áp dụng
 cho administrator. Review gate yêu cầu một approval, CODEOWNERS review, dismiss
 stale review và người approve khác người thực hiện lần push cuối.
+
+Theo DEC-022, required approval/CODEOWNERS review được tạm defer từ 31/08/2026.
+Strict CI, PR flow, admin enforcement, linear history, conversation resolution và
+chống force-push/delete vẫn bắt buộc. Deferment không làm Gate G0 PASS, không gán
+governance role và phải được gỡ bằng `apply-review-gate` trước product/production
+release hoặc trước khi cho phép dữ liệu HRI thật.
 
 ## Version và release
 

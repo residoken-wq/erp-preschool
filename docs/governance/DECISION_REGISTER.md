@@ -27,6 +27,7 @@ ví dụ. Mỗi quyết định được chấp nhận phải tạo/cập nhật
 | DEC-019 | Internet exposure của portal/API | Architecture/Security | G1 | APPROVED 30/08/2026 | Parent/mobile API và admin portal đều Internet-facing |
 | DEC-020 | Dữ liệu được phép trước G1 | Product/Privacy/Security | G1 | APPROVED 30/08/2026 | Chỉ synthetic/de-identified; cấm HRI thật |
 | DEC-021 | Phân bố component/data giữa cloud/on-prem, region, TLS/mTLS và network segmentation | Architecture/Security/Privacy | G1 | OPEN | Bắt buộc trước Internet deployment |
+| DEC-022 | Tạm defer GitHub required approval/CODEOWNERS review | Repository Owner | trước product/production hoặc HRI thật | TEMPORARY DEFERMENT 31/08/2026 | Giữ strict CI/PR/admin/linear/no-force-delete; bật lại bằng `apply-review-gate`; không phải G0 approval |
 
 ## Mẫu bằng chứng khi đóng quyết định
 

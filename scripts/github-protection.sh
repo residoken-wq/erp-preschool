@@ -77,6 +77,14 @@ case "${command}" in
   apply-bootstrap)
     require_github_auth
     require_repository_admin
+    current_review_gate="$(gh api \
+      "${protection_endpoint}/required_pull_request_reviews" \
+      --jq '.require_code_owner_reviews' 2>/dev/null || printf 'false')"
+    if [[ "${current_review_gate}" == "true" ]]; then
+      echo "Refusing to downgrade an active review gate with apply-bootstrap." >&2
+      echo "Use defer-review-gate with the explicit confirmation variable." >&2
+      exit 2
+    fi
     cat <<'JSON' | gh api \
       --method PUT \
       --header "Accept: application/vnd.github+json" \
@@ -109,6 +117,31 @@ JSON
     echo "CODEOWNERS approval remains disabled until a distinct reviewer is assigned."
     verify_protection
     ;;
+  defer-review-gate)
+    require_github_auth
+    require_repository_admin
+    if [[ "${GITHUB_DEFER_REVIEW_GATE_CONFIRM:-}" != "defer-until-product" ]]; then
+      echo "Set GITHUB_DEFER_REVIEW_GATE_CONFIRM=defer-until-product to confirm." >&2
+      exit 2
+    fi
+    cat <<'JSON' | gh api \
+      --method PATCH \
+      --header "Accept: application/vnd.github+json" \
+      --header "X-GitHub-Api-Version: 2022-11-28" \
+      "${protection_endpoint}/required_pull_request_reviews" \
+      --input - >/dev/null
+{
+  "dismiss_stale_reviews": true,
+  "require_code_owner_reviews": false,
+  "required_approving_review_count": 0,
+  "require_last_push_approval": false
+}
+JSON
+    echo "Required approval temporarily deferred on ${repository}:${branch}."
+    echo "Strict CI and other branch protections remain enabled."
+    echo "Run apply-review-gate before product/production release or real HRI use."
+    verify_protection
+    ;;
   apply-review-gate)
     require_github_auth
     require_repository_admin
@@ -137,6 +170,7 @@ Usage: ./scripts/github-protection.sh <command>
 Commands:
   verify           Read and print the current branch protection configuration
   apply-bootstrap  Require PR flow and CI without requiring self-approval
+  defer-review-gate Temporarily suspend approval with explicit confirmation
   apply-review-gate Require one independent CODEOWNER approval
   help             Show this help
 
@@ -144,9 +178,11 @@ Environment:
   GITHUB_REPOSITORY         owner/repository (default: residoken-wq/erp-preschool)
   GITHUB_PROTECTED_BRANCH   branch name (default: main)
   GITHUB_REVIEWER           independent reviewer (default: phamhanghula-ui)
+  GITHUB_DEFER_REVIEW_GATE_CONFIRM=defer-until-product
 
 Run apply-review-gate only after the independent reviewer is present in CODEOWNERS
-on the protected branch.
+on the protected branch. A deferred review gate must be restored before any
+product/production release or use of real HRI.
 EOF
     ;;
   *)
