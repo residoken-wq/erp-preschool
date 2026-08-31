@@ -33,7 +33,7 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
       lint, typecheck, 11 unit tests, build và API smoke;
     - job `compose-config` PASS: `docker compose config --quiet`.
 
-- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`TECHNICAL PASS — DOMAIN OWNERS PENDING`)
+- [ ] **NS-003 — Cấu hình branch protection/CODEOWNERS thật** (`REVIEW GATE DEFERRED — REOPEN BEFORE PRODUCT`)
   - Owner role: Repository Owner.
   - Dependency: tên GitHub team/user và NS-002.
   - Applied evidence ngày 30/08/2026:
@@ -56,6 +56,10 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
     Security/Privacy review cho HRI/auth/finance/AI.
   - Evidence còn thiếu để COMPLETE: approved Security/Privacy/domain owner handles
     và path-specific CODEOWNERS mapping cho HRI/auth/finance/AI.
+  - Temporary exception DEC-022 (31/08/2026): required approval/CODEOWNERS review
+    tạm để `0`/tắt theo yêu cầu Repository Owner. Strict CI/PR và các protection
+    khác vẫn bật. Bắt buộc chạy `apply-review-gate` trước product/production hoặc
+    HRI thật; deferment không phải G0 approval.
 
 - [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`NEXT — NOMINATION REQUIRED`)
   - Owner role: Executive Sponsor.
