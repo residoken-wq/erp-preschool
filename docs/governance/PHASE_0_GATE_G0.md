@@ -31,7 +31,7 @@
 | Frozen install | PASS; lockfile unchanged, 326 packages |
 | Lint | PASS, 6 workspace projects |
 | Strict typecheck | PASS, 6 workspace projects |
-| Unit | PASS: domain 4 + API permission 4 + config 3 = 11 tests |
+| Unit | PASS: domain 7 + API permission 4 + config 3 + data-policy script 7 = 21 tests |
 | Build | PASS: Web/API/Worker/shared packages |
 | Compose config | PASS |
 | Empty DB migrations | PASS: `0001`–`0005` trên PostgreSQL 16 |
@@ -44,7 +44,7 @@
 | Remote clean-checkout CI | PASS: `origin/main` commit `21e5f42ae74d35c45393b8f63eae96a9a7a665ab`; [run 33293376641](https://github.com/residoken-wq/erp-preschool/actions/runs/33293376641); jobs `quality` và `compose-config` |
 | Local restart lifecycle | PASS: `scripts/local-services.sh` stop/start giữ volumes; migration/seed idempotent; API/Web ready; smoke PASS |
 | Repository protection | PARTIAL/DEFERRED (DEC-022): strict `quality`/`compose-config`, PR flow, admin enforcement, linear history, conversation resolution và force-push/delete controls active; required approval/CODEOWNERS review tạm tắt, phải bật lại trước product/production hoặc HRI thật |
-| DEC-020 data ingestion guard | PASS local 31/08/2026: CI + seed validator, registered provenance, path/symlink/contact fail-closed, Lead API `422` negative policy test; remote CI evidence pending PR |
+| DEC-020 data ingestion guard | PASS 31/08/2026: merge `52cf4d0`; [main CI run 33352332700](https://github.com/residoken-wq/erp-preschool/actions/runs/33352332700); CI + seed validator, registered provenance, path/symlink/contact fail-closed và Lead API `422` negative policy test |
 
 Smoke bao gồm health/security headers, context/dashboard/list, create lead, missing
 permission `403`, prohibited pre-G1 ingestion `422`, duplicate `409`, invalid

@@ -119,7 +119,10 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
   - Evidence 31/08/2026: `pnpm data:guard`, shared seed/runtime validator,
     provenance metadata của `demo-seed-v1`, path/symlink/size/contact fail-closed,
     API Lead synthetic-only trả `422`, 7 script tests + 3 domain policy tests và
-    CI step chạy trước migration/seed.
+    CI step chạy trước migration/seed;
+  - [PR #14](https://github.com/residoken-wq/erp-preschool/pull/14) merged thành
+    `52cf4d0`; [main CI run 33352332700](https://github.com/residoken-wq/erp-preschool/actions/runs/33352332700)
+    PASS cả `quality` và `compose-config`.
 - [ ] Không bật upload/provider/AI endpoint trước control và test của TM-010/TM-011.
 - [ ] AI-0 phải có use-case owner, risk tier, provider/privacy approval, Effective-only
   retrieval, ACL-before-context, eval, reviewer và kill switch.
