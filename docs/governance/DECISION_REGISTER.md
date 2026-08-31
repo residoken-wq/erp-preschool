@@ -6,8 +6,8 @@ ví dụ. Mỗi quyết định được chấp nhận phải tạo/cập nhật
 | ID | Quyết định cần chốt | Owner role | Hạn gate | Trạng thái | Ghi chú |
 |---|---|---|---|---|---|
 | DEC-000 | Root là application source canonical | Product/Architecture | G0 | APPROVED 30/08/2026 | Evidence: Source Promotion Manifest |
-| DEC-001 | Chỉ định program/domain/security/privacy owners | Sponsor | G0 | PARTIAL — EFFECTIVE 01/09/2026 | GOV-FOUNDER-2026-001: founder roles accepted; Security/Privacy independent reviewer remains OPEN |
-| DEC-002 | Pilot campus và phạm vi organization | Product/Sponsor | G0 | SUBMITTED — DISPOSITION REQUIRED | Issue #16: public codes/timezone submitted; baseline versus expanded pilot unresolved |
+| DEC-001 | Chỉ định program/domain/security/privacy owners | Sponsor | G0 | PARTIAL — REVIEWER ACCEPTANCE PENDING | GOV-FOUNDER-2026-001 effective 01/09/2026; `@phamhanghula-ui` nominated, not yet accepted |
+| DEC-002 | Pilot campus và phạm vi organization | Product/Sponsor | G0 | APPROVED — BASELINE 01/09/2026 | DOC-PILOT-SCOPE-2026-V1: KIDS-EDU-GROUP/CAMPUS-01-HCM, Asia/Ho_Chi_Minh, SOP OS + Lead-to-Enrollment; all other domains excluded |
 | DEC-003 | Hosting model | Architecture/Security/Privacy | G1 | APPROVED 30/08/2026 | Hybrid; chi tiết topology ở DEC-021 |
 | DEC-004 | Enterprise IdP/OIDC, MFA và account lifecycle | Security/IT | G1 | OPEN | Development actor bị cấm ngoài local/test |
 | DEC-005 | PostgreSQL topology, HA, backup, RPO/RTO | Architecture/SRE | G1 | OPEN | Không tự gán RPO/RTO |

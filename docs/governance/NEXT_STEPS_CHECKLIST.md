@@ -61,7 +61,7 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
     khác vẫn bật. Bắt buộc chạy `apply-review-gate` trước product/production hoặc
     HRI thật; deferment không phải G0 approval.
 
-- [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`PARTIAL — INDEPENDENT REVIEW + SCOPE DISPOSITION REQUIRED`)
+- [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`PARTIAL — REVIEWER ACCEPTANCE REQUIRED`)
   - Owner role: Executive Sponsor.
   - Required: Product Owner, Security Owner, Privacy/Data Owner, SOP Owner, Pilot
     Process Owner và campus pilot.
@@ -77,10 +77,16 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
     [public declaration](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473520431).
   - Path-specific CODEOWNERS maps the verified founder and technical reviewer;
     `@phamhanghula-ui` is not a governance owner and DEC-022 remains active.
-  - Remaining: independent Security/Privacy reviewer; choose roadmap-baseline
-    pilot or approve expanded re-baseline; complete exclusions and SoD/rollback.
+  - Pilot decision: `DOC-PILOT-SCOPE-2026-V1` approved effective 01/09/2026 for
+    `KIDS-EDU-GROUP` / `CAMPUS-01-HCM`, `Asia/Ho_Chi_Minh`, SOP OS +
+    Lead-to-Enrollment; all domains not explicitly included are excluded.
+  - Independent reviewer `@phamhanghula-ui` is nominated and has been
+    [asked to accept](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473623519).
+    Remaining: acceptance evidence `GH-ISSUE-16-INDEP-REVIEWER-ACK-V1`, then
+    independent threat/privacy review; detailed UAT/rollback remains a later
+    readiness gate and is not production approval.
 
-- [ ] **NS-005 — Security/Privacy sign-off threat model** (`BLOCKED — INDEPENDENT REVIEWER REQUIRED`)
+- [ ] **NS-005 — Security/Privacy sign-off threat model** (`BLOCKED — REVIEWER ACCEPTANCE PENDING`)
   - Owner role: Security Owner + Privacy/Data Owner.
   - Review: `erp-preschool-threat-model.md`; xác nhận TM-001/TM-004 là release
     blocker và disposition cho toàn bộ threat `high`.

@@ -13,6 +13,7 @@
 | Solution Architect | ADR, boundary, NFR | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
 | Data Owner — Admission | classification, access, quality | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
 | Campus Pilot Owner | synthetic UAT planning and rollback | `@residoken-wq` | ACCEPTED — synthetic pilot only |
+| Independent Security/Privacy Reviewer | G0 threat/privacy review; no risk-waiver authority | `@phamhanghula-ui` | NOMINATED — acceptance pending |
 | AI Governance Owner | AI use-case/risk/eval/kill switch | TBD | OPEN trước AI-0 |
 
 Không có tên cá nhân nào được suy đoán. Product Sponsor phải chỉ định role owner
@@ -27,6 +28,11 @@ Solo-founder authority is recorded by `GOV-FOUNDER-2026-001` and
 Combining accountable roles is permitted for this stage, but does not waive SoD:
 independent Security/Privacy sign-off, financial approval and high-risk waiver
 remain external/open controls.
+
+Independent reviewer nomination is recorded in
+[Issue #16](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473623519).
+The role is not active until the nominated account posts acceptance evidence
+`GH-ISSUE-16-INDEP-REVIEWER-ACK-V1`.
 
 ## Nhịp quản trị đề xuất
 

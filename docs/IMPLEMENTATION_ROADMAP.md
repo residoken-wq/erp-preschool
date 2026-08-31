@@ -140,10 +140,11 @@ gate và một traceability matrix.
 
 ## 7. Phase 0 — Mobilization & Canonical Baseline
 
-**Execution status 30/08/2026:** In progress. Source promotion, local engineering
-gates, threat-model baseline và remote clean-checkout CI đã hoàn tất; local stack
-có lifecycle script và restart/smoke evidence. Gate G0 chưa PASS do chưa có named
-owners/pilot scope, Security/Privacy sign-off và branch protection/CODEOWNERS thật.
+**Execution status 31/08/2026:** In progress. Source promotion, local engineering
+gates, threat-model baseline, remote clean-checkout CI, solo-founder role mapping
+và SOP OS + Lead-to-Enrollment pilot baseline đã hoàn tất. Gate G0 chưa PASS do
+independent Security/Privacy reviewer chưa accept/sign-off, hybrid identity/data
+boundary decisions còn mở và GitHub approval gate đang defer theo DEC-022.
 Xem `governance/PHASE_0_GATE_G0.md`.
 
 ### 7.1 Mục tiêu
