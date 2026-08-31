@@ -1,13 +1,13 @@
 # Phase 0 — Gate G0 Evidence
 
 **Gate status: NOT READY FOR PASS**  
-**Ngày đánh giá:** 30/08/2026
+**Ngày đánh giá:** 31/08/2026
 
 | Exit criterion | Evidence | Status |
 |---|---|---|
 | Một canonical source | Source Promotion Manifest: 90/90 checksum match | PASS |
 | CI từ clean checkout | local baseline commit `b533f75`; remote `main` commit `21e5f42`; GitHub Actions run `33293376641` | PASS |
-| Named Product/Security/Data/Pilot owners | Program Governance | BLOCKED — DEC-001/002 |
+| Named Product/Security/Data/Pilot owners | GOV-FOUNDER-2026-001; Program Governance | PARTIAL — founder roles effective 01/09/2026; Security/Privacy interim; independent reviewer and pilot-scope disposition OPEN |
 | 28 SOP mapped/deduplicated | Canonical SOP Register; source count discrepancy recorded | PASS baseline; approval pending |
 | Decision Register có owner/deadline | role owner và gate recorded | PASS baseline; named owners pending |
 | Backlog Phase 1–2 đạt DoR | Backlog + Traceability baseline | REVIEW REQUIRED |
@@ -16,12 +16,14 @@
 
 ## Điều kiện còn thiếu để ký PASS
 
-1. Sponsor chỉ định tối thiểu Product, Security, Data/SOP và Pilot Process Owner.
-2. Security/Privacy owner review threat model và đưa TM-001/TM-004 cùng các high
+1. Chỉ định independent Security/Privacy reviewer; founder interim owner không tự
+   sign-off threat/privacy decision hoặc risk waiver.
+2. Chốt roadmap-baseline pilot hoặc phê duyệt expanded-pilot re-baseline, complete
+   exclusions, domain owners, dependencies, gates và rollback authority.
+3. Security/Privacy owner + independent reviewer review threat model và đưa TM-001/TM-004 cùng các high
    threats vào Phase 1 backlog/gate.
-3. Chỉ định Security/Privacy/domain owners và gán CODEOWNERS path-specific cho
-   HRI/auth/finance/AI; technical review gate đã được áp dụng.
-4. Product/Architecture/Security/Privacy review backlog, traceability và open decisions.
+4. Mở lại required approval theo DEC-022 trước product/production hoặc HRI thật.
+5. Product/Architecture/Security/Privacy review backlog, traceability và open decisions.
 
 ## Execution evidence ngày 30/08/2026
 

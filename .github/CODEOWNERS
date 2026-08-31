@@ -1,7 +1,19 @@
-# Fallback owners verified as direct repository collaborators. This establishes an
-# independent technical review path; it does not assign Product, Security,
-# Privacy/Data, or Architecture governance roles.
+# Fallback owners verified as direct repository collaborators. @residoken-wq is
+# the solo-founder accountable owner effective 2026-09-01 under GOV-FOUNDER-2026-001.
+# @phamhanghula-ui remains an independent technical reviewer only; neither this
+# file nor a PR review assigns Security/Privacy governance authority.
 * @residoken-wq @phamhanghula-ui
 
-# Domain-specific teams/users for database, API/auth/HRI, governance, and domain
-# paths remain required after the corresponding governance roles are approved.
+# Explicit high-risk and governance paths. Required approval is temporarily
+# deferred under DEC-022; independent Security/Privacy sign-off remains required
+# before NS-005/G0, product/production, or real HRI.
+/.github/ @residoken-wq @phamhanghula-ui
+/apps/api/src/platform/ @residoken-wq @phamhanghula-ui
+/apps/api/src/modules/admission/ @residoken-wq @phamhanghula-ui
+/database/ @residoken-wq @phamhanghula-ui
+/packages/domain/ @residoken-wq @phamhanghula-ui
+/docs/adr/ @residoken-wq @phamhanghula-ui
+/docs/backlog/ @residoken-wq @phamhanghula-ui
+/docs/governance/ @residoken-wq @phamhanghula-ui
+/docs/traceability/ @residoken-wq @phamhanghula-ui
+/erp-preschool-threat-model.md @residoken-wq @phamhanghula-ui
