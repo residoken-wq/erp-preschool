@@ -1,14 +1,14 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import process from 'node:process';
 import pg from 'pg';
+import { loadApprovedDataset } from './data-policy.mjs';
 
 const { Client } = pg;
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error('DATABASE_URL is required');
 
-const seedPath = path.resolve(process.argv[2] ?? 'database/seed/demo-seed.json');
-const seed = JSON.parse(await readFile(seedPath, 'utf8'));
+const seedPath = process.argv[2] ?? 'database/seed/demo-seed.json';
+const approvedDataset = await loadApprovedDataset(seedPath);
+const seed = approvedDataset.dataset;
 const client = new Client({ connectionString: databaseUrl });
 await client.connect();
 
@@ -101,51 +101,39 @@ async function seedSops(processIds) {
 }
 
 async function seedMvpDemo() {
-  const demo = [
-    { personId: '10000000-0000-7000-8000-000000000001', leadId: '20000000-0000-7000-8000-000000000001', code: 'LEAD-2026-0101', first: 'Lê', last: 'Gia Hân', email: 'ph.han@example.test', phone: '+84901234001', status: 'NEW' },
-    { personId: '10000000-0000-7000-8000-000000000002', leadId: '20000000-0000-7000-8000-000000000002', code: 'LEAD-2026-0102', first: 'Nguyễn', last: 'Minh Khang', email: 'ph.khang@example.test', phone: '+84901234002', status: 'CONTACTED' },
-    { personId: '10000000-0000-7000-8000-000000000003', leadId: '20000000-0000-7000-8000-000000000003', code: 'LEAD-2026-0103', first: 'Trần', last: 'Bảo An', email: 'ph.an@example.test', phone: '+84901234003', status: 'QUALIFIED' },
-    { personId: '10000000-0000-7000-8000-000000000004', leadId: '20000000-0000-7000-8000-000000000004', code: 'LEAD-2026-0104', first: 'Phạm', last: 'Khánh Linh', email: 'ph.linh@example.test', phone: '+84901234004', status: 'CONVERTED' }
-  ];
-  for (const item of demo) {
+  for (const item of seed.demo_leads ?? []) {
     await client.query(
       `INSERT INTO persons(id, organization_id, first_name, last_name, email_normalized, phone_normalized, data_classification)
        VALUES ($1, $2, $3, $4, $5, $6, 'HRI') ON CONFLICT (id) DO UPDATE SET first_name = EXCLUDED.first_name, last_name = EXCLUDED.last_name`,
-      [item.personId, seed.organization.id, item.first, item.last, item.email, item.phone]
+      [item.person_id, seed.organization.id, item.first_name, item.last_name, item.email, item.phone]
     );
     await client.query(
       `INSERT INTO leads(id, organization_id, code, primary_contact_person_id, campus_id, source_type, owner_user_id, status, next_action_at)
        VALUES ($1, $2, $3, $4, $5, 'WEBSITE', $6, $7, now() + interval '1 day')
        ON CONFLICT (organization_id, code) DO UPDATE SET status = EXCLUDED.status, updated_at = now()`,
-      [item.leadId, seed.organization.id, item.code, item.personId, seed.campuses[0].id, seed.demo_users[0].id, item.status]
+      [item.lead_id, seed.organization.id, item.code, item.person_id, seed.campuses[0].id, seed.demo_users[0].id, item.status]
     );
   }
 
-  await client.query(
-    `INSERT INTO applications(id, organization_id, code, lead_id, campus_id, program_code, intake_code, status, assigned_user_id)
-     VALUES
-       ('30000000-0000-7000-8000-000000000001', $1, 'APP-2026-0148', '20000000-0000-7000-8000-000000000004', $2, 'PRESCHOOL-4', '2026-FALL', 'INCOMPLETE', $3),
-       ('30000000-0000-7000-8000-000000000002', $1, 'APP-2026-0149', '20000000-0000-7000-8000-000000000003', $2, 'PRESCHOOL-5', '2026-FALL', 'DOCUMENT_REVIEW', $3)
-     ON CONFLICT (organization_id, code) DO UPDATE SET status = EXCLUDED.status, updated_at = now()`,
-    [seed.organization.id, seed.campuses[0].id, seed.demo_users[0].id]
-  );
+  for (const application of seed.demo_applications ?? []) {
+    await client.query(
+      `INSERT INTO applications(id, organization_id, code, lead_id, campus_id, program_code, intake_code, status, assigned_user_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       ON CONFLICT (organization_id, code) DO UPDATE SET status = EXCLUDED.status, updated_at = now()`,
+      [application.id, seed.organization.id, application.code, application.lead_id, seed.campuses[0].id, application.program_code, application.intake_code, application.status, seed.demo_users[0].id]
+    );
+  }
 
-  const taskRows = [
-    ['40000000-0000-7000-8000-000000000001', 'APP-2026-0148 thiếu giấy khai sinh', 'Application', '30000000-0000-7000-8000-000000000001', 'HIGH', "now() - interval '2 hours'"],
-    ['40000000-0000-7000-8000-000000000002', 'Review hồ sơ APP-2026-0149', 'Application', '30000000-0000-7000-8000-000000000002', 'NORMAL', "date_trunc('day', now()) + interval '17 hours'"],
-    ['40000000-0000-7000-8000-000000000003', 'Liên hệ Lead LEAD-2026-0101', 'Lead', '20000000-0000-7000-8000-000000000001', 'URGENT', "now() + interval '1 hour'"]
-  ];
-  for (const [id, title, objectType, objectId, priority, dueExpression] of taskRows) {
+  for (const item of seed.demo_work_items ?? []) {
     await client.query(
       `INSERT INTO work_items(id, organization_id, campus_id, assignee_user_id, title, related_object_type, related_object_id, priority, due_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, ${dueExpression})
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now() + ($9 * interval '1 hour'))
        ON CONFLICT (id) DO UPDATE SET title = EXCLUDED.title, priority = EXCLUDED.priority, due_at = EXCLUDED.due_at`,
-      [id, seed.organization.id, seed.campuses[0].id, seed.demo_users[0].id, title, objectType, objectId, priority]
+      [item.id, seed.organization.id, seed.campuses[0].id, seed.demo_users[0].id, item.title, item.object_type, item.object_id, item.priority, item.due_offset_hours]
     );
   }
 
-  const sopStates = { 'ADM-001': 'EFFECTIVE', 'ADM-004': 'IN_REVIEW', 'ADM-010': 'DRAFT' };
-  for (const [code, status] of Object.entries(sopStates)) {
+  for (const { code, status } of seed.demo_sop_states ?? []) {
     const sop = await client.query(`SELECT id FROM sops WHERE organization_id = $1 AND code = $2`, [seed.organization.id, code]);
     if (!sop.rows[0]) continue;
     const version = await client.query(
@@ -181,7 +169,7 @@ try {
   await seedSops(processIds);
   await seedMvpDemo();
   await client.query('COMMIT');
-  console.log(`Seed complete from ${seedPath}`);
+  console.log(`Seed complete from ${approvedDataset.relativePath} (${approvedDataset.metadata.dataset_id})`);
 } catch (error) {
   await client.query('ROLLBACK');
   throw error;

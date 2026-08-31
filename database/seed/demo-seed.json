@@ -1,4 +1,13 @@
 {
+  "_data_policy": {
+    "schema_version": 1,
+    "dataset_id": "demo-seed-v1",
+    "provenance": "synthetic",
+    "contains_real_hri": false,
+    "decision": "DEC-020",
+    "purpose": "Deterministic local and CI product demonstration",
+    "owner_role": "Engineering Lead"
+  },
   "organization": {
     "id": "00000000-0000-7000-8000-000000000001",
     "code": "DEMO-SCHOOL",
@@ -35,6 +44,25 @@
     {"code": "ADM-001", "title": "Tiếp nhận và phân loại Lead", "owner_role": "ADMISSION_MANAGER", "type": "OPERATIONAL", "priority": "P0", "status": "PROPOSED"},
     {"code": "ADM-004", "title": "Tiếp nhận Application", "owner_role": "ADMISSION_MANAGER", "type": "OPERATIONAL", "priority": "P0", "status": "PROPOSED"},
     {"code": "ADM-010", "title": "Operational Handover", "owner_role": "ACADEMIC_MANAGER", "type": "CONTROL", "priority": "P0", "status": "PROPOSED"}
+  ],
+  "demo_leads": [
+    {"person_id": "10000000-0000-7000-8000-000000000001", "lead_id": "20000000-0000-7000-8000-000000000001", "code": "LEAD-2026-0101", "first_name": "Lê", "last_name": "Gia Hân", "email": "ph.han@example.test", "phone": "+000000000001", "status": "NEW"},
+    {"person_id": "10000000-0000-7000-8000-000000000002", "lead_id": "20000000-0000-7000-8000-000000000002", "code": "LEAD-2026-0102", "first_name": "Nguyễn", "last_name": "Minh Khang", "email": "ph.khang@example.test", "phone": "+000000000002", "status": "CONTACTED"},
+    {"person_id": "10000000-0000-7000-8000-000000000003", "lead_id": "20000000-0000-7000-8000-000000000003", "code": "LEAD-2026-0103", "first_name": "Trần", "last_name": "Bảo An", "email": "ph.an@example.test", "phone": "+000000000003", "status": "QUALIFIED"},
+    {"person_id": "10000000-0000-7000-8000-000000000004", "lead_id": "20000000-0000-7000-8000-000000000004", "code": "LEAD-2026-0104", "first_name": "Phạm", "last_name": "Khánh Linh", "email": "ph.linh@example.test", "phone": "+000000000004", "status": "CONVERTED"}
+  ],
+  "demo_applications": [
+    {"id": "30000000-0000-7000-8000-000000000001", "code": "APP-2026-0148", "lead_id": "20000000-0000-7000-8000-000000000004", "program_code": "PRESCHOOL-4", "intake_code": "2026-FALL", "status": "INCOMPLETE"},
+    {"id": "30000000-0000-7000-8000-000000000002", "code": "APP-2026-0149", "lead_id": "20000000-0000-7000-8000-000000000003", "program_code": "PRESCHOOL-5", "intake_code": "2026-FALL", "status": "DOCUMENT_REVIEW"}
+  ],
+  "demo_work_items": [
+    {"id": "40000000-0000-7000-8000-000000000001", "title": "APP-2026-0148 thiếu tài liệu synthetic", "object_type": "Application", "object_id": "30000000-0000-7000-8000-000000000001", "priority": "HIGH", "due_offset_hours": -2},
+    {"id": "40000000-0000-7000-8000-000000000002", "title": "Review hồ sơ synthetic APP-2026-0149", "object_type": "Application", "object_id": "30000000-0000-7000-8000-000000000002", "priority": "NORMAL", "due_offset_hours": 17},
+    {"id": "40000000-0000-7000-8000-000000000003", "title": "Liên hệ Lead synthetic LEAD-2026-0101", "object_type": "Lead", "object_id": "20000000-0000-7000-8000-000000000001", "priority": "URGENT", "due_offset_hours": 1}
+  ],
+  "demo_sop_states": [
+    {"code": "ADM-001", "status": "EFFECTIVE"},
+    {"code": "ADM-004", "status": "IN_REVIEW"},
+    {"code": "ADM-010", "status": "DRAFT"}
   ]
 }
-

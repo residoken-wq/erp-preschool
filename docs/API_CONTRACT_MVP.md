@@ -49,6 +49,19 @@ Superseded, and Archived content cannot be edited.
 | POST | `/applications/enrollments/{id}/finance-setup` | Create Contract and Fee Plan drafts |
 | POST | `/applications/enrollments/{id}/handover/transitions` | Ready, submit, return, or accept Handover |
 
+### Temporary pre-G1 Lead ingestion contract
+
+Cho đến khi Gate G1 và data-use decision tương ứng được phê duyệt, `POST /leads`
+chỉ nhận dữ liệu synthetic:
+
+- `dataProvenance` bắt buộc bằng `synthetic`;
+- `firstName` và `lastName` bắt đầu bằng `Synthetic-`;
+- email, nếu có, dùng IANA example domain; phone, nếu có, dùng range `+000`;
+- vi phạm policy trả HTTP `422` trước khi mở transaction hoặc ghi dữ liệu.
+
+Không được bỏ guard bằng environment flag. Việc thay contract này phải là thay đổi
+gated sau G1, có Privacy/Security approval và negative test cập nhật.
+
 ## Mutation guarantees
 
 - The database transaction contains the business write, append-only audit event,

@@ -1,6 +1,6 @@
 # Next Steps Checklist — G0 Closure to Phase 1
 
-**Cập nhật:** 30/08/2026  
+**Cập nhật:** 31/08/2026
 **Nguyên tắc:** Không bắt đầu code Phase 1 hoặc nhập HRI thật trước khi Gate G0 được
 ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không phải approval.
 
@@ -115,7 +115,11 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
 ## C. Data and AI guardrails xuyên suốt
 
 - [x] Trước G1 chỉ dùng synthetic/de-identified data; cấm HRI thật (DEC-020).
-- [ ] Tạo CI/data-ingestion guard chứng minh DEC-020, không chỉ dựa vào quy trình.
+- [x] Tạo CI/data-ingestion guard chứng minh DEC-020, không chỉ dựa vào quy trình.
+  - Evidence 31/08/2026: `pnpm data:guard`, shared seed/runtime validator,
+    provenance metadata của `demo-seed-v1`, path/symlink/size/contact fail-closed,
+    API Lead synthetic-only trả `422`, 7 script tests + 3 domain policy tests và
+    CI step chạy trước migration/seed.
 - [ ] Không bật upload/provider/AI endpoint trước control và test của TM-010/TM-011.
 - [ ] AI-0 phải có use-case owner, risk tier, provider/privacy approval, Effective-only
   retrieval, ACL-before-context, eval, reviewer và kill switch.

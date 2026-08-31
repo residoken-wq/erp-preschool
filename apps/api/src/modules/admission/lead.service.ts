@@ -1,12 +1,13 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
 import type { ActorContext, LeadStatus, PageResult } from '@sop-os/contracts';
-import { leadStateMachine } from '@sop-os/domain';
+import { assertPreG1SyntheticLead, leadStateMachine, PreG1DataPolicyError } from '@sop-os/domain';
 import type { Pool, PoolClient } from 'pg';
 import { randomUUID } from 'node:crypto';
 import { PG_POOL } from '../../platform/database.module.js';
 import { recordMutation } from '../../platform/mutation-log.js';
 
 export type CreateLeadCommand = {
+  dataProvenance: 'synthetic';
   code: string;
   firstName: string;
   lastName: string;
@@ -66,6 +67,12 @@ export class LeadService {
     }
     if (!email && !phone) throw new BadRequestException('email or phone is required');
     if (command.campusId && !actor.campusIds.includes(command.campusId)) throw new BadRequestException('Campus is outside the actor scope');
+    try {
+      assertPreG1SyntheticLead({ ...command, email, phone });
+    } catch (error) {
+      if (error instanceof PreG1DataPolicyError) throw new UnprocessableEntityException(error.message);
+      throw error;
+    }
 
     const client = await this.pool.connect();
     try {

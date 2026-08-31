@@ -39,6 +39,7 @@ jobs:
           node-version: 22.18.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm data:guard
       - run: pnpm db:migrate
       - run: pnpm db:seed
       - run: pnpm lint

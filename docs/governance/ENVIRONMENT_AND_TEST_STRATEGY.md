@@ -22,6 +22,25 @@ CI dùng frozen lockfile và synthetic seed. Staging/production phải fail star
 còn `AUTH_MODE=development`, fake actor hoặc wildcard permission. Thời hạn lưu test
 evidence và performance/RPO/RTO target phụ thuộc Decision Register.
 
+## DEC-020 executable controls trước G1
+
+- `pnpm data:guard` quét mọi JSON dưới `database/seed` trước migration/seed trong
+  CI; dataset phải khai báo policy schema v1, unique ID, provenance, purpose,
+  owner role, `contains_real_hri=false` và reference `DEC-020`.
+- `scripts/seed.mjs` dùng cùng validator và chỉ đọc regular JSON file bên dưới
+  `database/seed`; không cho path traversal hoặc symlink.
+- Synthetic contact chỉ dùng IANA example domain và non-routable `+000`. Dataset
+  de-identified cần approval evidence ID, phương pháp de-identification và source
+  fingerprint SHA-256; các giá trị `TBD` bị từ chối.
+- Current HRI ingestion surface `POST /leads` yêu cầu provenance synthetic, prefix
+  tên `Synthetic-` và reserved contact. Negative unit/smoke tests chứng minh HTTP
+  `422` xảy ra trước transaction.
+
+Guard giúp chặn ingestion nhầm ở các surface hiện có, không khẳng định có thể tự
+nhận diện mọi dữ liệu người thật trong free text. Quy trình data minimization và
+review vẫn bắt buộc; khi thêm import/upload/AI surface phải tích hợp guard tương
+đương trước khi enable.
+
 ## Local service lifecycle
 
 Từ application root, dùng `./scripts/local-services.sh start` sau khi máy hoặc
