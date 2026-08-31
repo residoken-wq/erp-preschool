@@ -1,6 +1,6 @@
 # NS-004 — Governance Owner Nomination and Pilot Scope
 
-**Status:** PARTIAL — SOLO-FOUNDER DECLARED; INDEPENDENT REVIEW AND SCOPE DISPOSITION OPEN
+**Status:** PARTIAL — PILOT BASELINE APPROVED; REVIEWER ACCEPTANCE OPEN
 
 **Decision links:** DEC-001, DEC-002
 
@@ -10,6 +10,9 @@
 
 **Authority evidence:** [Solo-founder declaration](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473520431),
 `GOV-FOUNDER-2026-001`, effective `2026-09-01`
+
+**Pilot decision:** [Baseline approval](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473620736),
+`DOC-PILOT-SCOPE-2026-V1`, effective `2026-09-01`
 
 Tài liệu này là form thu thập bằng chứng, không tự tạo authority. Một vai trò chỉ
 chuyển `ACCEPTED` khi có approval reference của Sponsor/người có thẩm quyền, ngày
@@ -33,6 +36,7 @@ evidence ID không nhạy cảm vào repository.
 | Solution Architect | `@residoken-wq` | ADR, boundary, NFR | GOV-FOUNDER-2026-001 | 2026-09-01 | GH-ISSUE-16-FOUNDER-ACK-V1 | ACCEPTED — EFFECTIVE 2026-09-01 |
 | Data Owner — Admission | `@residoken-wq` | classification, access, quality, minimization | GOV-FOUNDER-2026-001 | 2026-09-01 | GH-ISSUE-16-FOUNDER-ACK-V1 | ACCEPTED — EFFECTIVE 2026-09-01 |
 | Campus Pilot Owner | `@residoken-wq` | synthetic pilot preparation, UAT plan, rollback | GOV-FOUNDER-2026-001 | 2026-09-01 | GH-ISSUE-16-FOUNDER-ACK-V1 | ACCEPTED — SYNTHETIC PILOT ONLY |
+| Independent Security/Privacy Reviewer | `@phamhanghula-ui` | independent G0 threat/privacy review; no risk-waiver authority | Issue #16 nomination | upon reviewer acceptance | GH-ISSUE-16-INDEP-REVIEWER-ACK-V1 | NOMINATED — ACCEPTANCE PENDING |
 | AI Governance Owner | TBD | use case, risk, eval, kill switch | TBD | trước AI-0 | TBD | OPEN |
 
 Một team/handle có thể giữ nhiều vai trò trong giai đoạn đầu nếu Sponsor phê duyệt,
@@ -43,15 +47,15 @@ phải có reviewer độc lập theo policy.
 
 | Field | Approved value | Approval evidence ID | Status |
 |---|---|---|---|
-| Organization public code | `KIDS-EDU-GROUP` | DOC-PILOT-SCOPE-2026-V1 | SUBMITTED — SCOPE APPROVAL PENDING |
-| Pilot campus public code | `CAMPUS-01-HCM` | DOC-PILOT-SCOPE-2026-V1 | SUBMITTED — SYNTHETIC PILOT ONLY |
-| Business timezone (IANA) | `Asia/Ho_Chi_Minh` | DOC-PILOT-SCOPE-2026-V1 | VALIDATED — SCOPE APPROVAL PENDING |
+| Organization public code | `KIDS-EDU-GROUP` | DOC-PILOT-SCOPE-2026-V1 | APPROVED — BASELINE PLANNING |
+| Pilot campus public code | `CAMPUS-01-HCM` | DOC-PILOT-SCOPE-2026-V1 | APPROVED — SYNTHETIC BASELINE PILOT |
+| Business timezone (IANA) | `Asia/Ho_Chi_Minh` | DOC-PILOT-SCOPE-2026-V1 | APPROVED |
 | Hosting boundary reference | Hybrid — chi tiết chờ DEC-021 | DEC-003 | PARTIAL |
 | Internet exposure | Parent/mobile và admin đều Internet-facing | DEC-019 | APPROVED |
 | Data allowed before G1 | Synthetic/de-identified only; no real HRI | DEC-020 | APPROVED |
-| Pilot capability scope | Roadmap baseline versus expanded submission in Issue #16 | DOC-PILOT-SCOPE-2026-V1 | DISPOSITION REQUIRED |
-| Explicitly excluded domains | Submission lists transport, payroll integration and asset management only | DOC-PILOT-SCOPE-2026-V1 | INCOMPLETE — scope-closure clause required |
-| UAT user cohorts (roles, no names) | Role cohorts submitted in Issue #16 | DOC-PILOT-SCOPE-2026-V1 | PENDING CAPABILITY/GATE DISPOSITION |
+| Pilot capability scope | SOP OS + Lead-to-Enrollment | DOC-PILOT-SCOPE-2026-V1 + Issue #16 baseline decision | APPROVED — BASELINE |
+| Explicitly excluded domains | All domains not explicitly included are excluded | Issue #16 baseline decision | APPROVED |
+| UAT user cohorts (roles, no names) | Must be derived from baseline scope; no real users before applicable gates | TBD readiness evidence | PLANNING REQUIRED |
 | Pilot start window | 2026-10-01 through 2026-12-31 | DOC-PILOT-SCOPE-2026-V1 | SUBMITTED — NOT A GO-LIVE APPROVAL |
 | Pilot exit/rollback authority | Founder holds both submitted aliases | DOC-PILOT-SCOPE-2026-V1 | SOD/RISK REVIEW REQUIRED |
 
@@ -85,10 +89,14 @@ comment trên issue cũng không tự trở thành approval nếu thiếu author
 1. Security and Privacy accountability is assigned on an interim basis, but the
    founder cannot independently sign off their own threat disposition, privacy
    decision or risk waiver. A verified independent reviewer remains required.
-2. The expanded pilot submission conflicts with the approved delivery sequence.
-   Sponsor must explicitly choose the roadmap baseline or approve a re-baseline
-   with owners, gates, dependencies and rollback.
+2. The roadmap baseline is approved. Previously submitted expanded capabilities
+   are later-wave candidates only and require their applicable owners and gates.
 3. `@phamhanghula-ui` remains a technical reviewer only. CODEOWNERS mapping does
    not assign a governance role and required approval remains deferred by DEC-022.
 4. No real HRI or real-parent pilot is allowed before G1 and the applicable
    Go/No-Go decision.
+
+Reviewer nomination and requested acceptance are recorded at
+[Issue #16](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473623519).
+Nomination is not acceptance; NS-005 remains blocked until `@phamhanghula-ui`
+posts `GH-ISSUE-16-INDEP-REVIEWER-ACK-V1` from that verified account.
