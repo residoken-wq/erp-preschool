@@ -92,8 +92,9 @@ và `SOP-BUS-001`; import pipeline phải normalize format trước khi parse.
 - Hash-chain audit chưa bao gồm toàn bộ security context và không tương đương digital
   signature hoặc WORM storage. Cần restricted DB role, verification độc lập và
   evidence export nếu dùng cho pháp lý.
-- Migration runner apply SQL rồi mới ghi `schema_migrations`; vì file migration tự
-  `COMMIT`, record và schema change không hoàn toàn atomic khi lỗi giữa hai bước.
+- Migration runner baseline từng apply SQL rồi mới ghi `schema_migrations`. Runner
+  hiện quản lý transaction bao trùm DDL + registry, dùng advisory lock chống chạy
+  song song và checksum fail-closed khi migration đã apply bị sửa hoặc biến mất.
 - OIDC mode có validation env nhưng chưa tạo actor; bật mode này làm API không dùng
   được thay vì thực hiện login/token validation.
 - Config schema chưa quản lý hết object-storage variables có trong `.env.example`.
