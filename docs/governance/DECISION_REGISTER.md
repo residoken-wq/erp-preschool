@@ -9,7 +9,7 @@ ví dụ. Mỗi quyết định được chấp nhận phải tạo/cập nhật
 | DEC-001 | Chỉ định program/domain/security/privacy owners | Sponsor | G0 | APPROVED — REVIEWER ACCEPTED 02/09/2026 | GOV-FOUNDER-2026-001; `@phamhanghula-ui` acceptance evidence `GH-ISSUE-16-INDEP-REVIEWER-ACK-V1`; independent sign-off remains NS-005 |
 | DEC-002 | Pilot campus và phạm vi organization | Product/Sponsor | G0 | APPROVED — BASELINE 01/09/2026 | DOC-PILOT-SCOPE-2026-V1: KIDS-EDU-GROUP/CAMPUS-01-HCM, Asia/Ho_Chi_Minh, SOP OS + Lead-to-Enrollment; all other domains excluded |
 | DEC-003 | Hosting model | Architecture/Security/Privacy | G1 | APPROVED 30/08/2026 | Hybrid; chi tiết topology ở DEC-021 |
-| DEC-004 | Enterprise IdP/OIDC, MFA và account lifecycle | Security/IT | G1 | OPEN — INTAKE READY | `NS006_IDENTITY_HYBRID_DECISION.md`; Issue #20; development actor bị cấm ngoài local/test |
+| DEC-004 | Enterprise IdP/OIDC, MFA và account lifecycle | Security/IT | G1 | OPEN — OWNER ASSIGNED; VALUES/REVIEW PENDING | IT/IdP owner `@residoken-wq`, evidence `GH-ISSUE-20-IT-OWNER-ASSIGN-V1`; Issue #20; development actor bị cấm ngoài local/test |
 | DEC-005 | PostgreSQL topology, HA, backup, RPO/RTO | Architecture/SRE | G1 | OPEN | Không tự gán RPO/RTO |
 | DEC-006 | Object storage, malware scanner và signed access | Security/SRE | G1 | OPEN | HRI document path |
 | DEC-007 | Secret manager, KMS/key rotation và audit access | Security/SRE | G1 | OPEN | Không lưu secret trong repo |

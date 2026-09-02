@@ -8,6 +8,9 @@
 
 **Decision request:** [GitHub Issue #20](https://github.com/residoken-wq/erp-preschool/issues/20)
 
+**IT / IdP Tenant Owner:** `@residoken-wq`, assigned effective `2026-09-02` under
+[evidence `GH-ISSUE-20-IT-OWNER-ASSIGN-V1`](https://github.com/residoken-wq/erp-preschool/issues/20#issuecomment-5504506583)
+
 Tài liệu này chuẩn bị dữ liệu để người có thẩm quyền chốt kiến trúc. Nó không chọn
 nhà cung cấp, không cấp quyền triển khai Internet/HRI và không thay thế Security /
 Privacy review. Cho đến khi có quyết định được duyệt, `AUTH_MODE=development` chỉ
@@ -33,7 +36,7 @@ private key, token, cấu hình firewall nội bộ hoặc private evidence vào
 
 | Field | Giá trị cần quyết định | Trạng thái |
 |---|---|---|
-| IdP/provider và tenant owner | Provider đã qua vendor/privacy review; accountable tenant administrator | OPEN |
+| IdP/provider và tenant owner | Tenant owner `@residoken-wq` assigned; provider vẫn phải qua vendor/privacy review | PARTIAL — OWNER ASSIGNED; PROVIDER OPEN |
 | User populations | Staff/admin, parent/guardian và service identity; xác nhận tách hay dùng chung tenant | OPEN |
 | OIDC flow | Flow cho browser/mobile/API; callback/logout pattern; PKCE requirement | OPEN |
 | Token trust | Issuer, audience(s), JWKS discovery/cache, algorithm allowlist và key-rotation behavior | OPEN |

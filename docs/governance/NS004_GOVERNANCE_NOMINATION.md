@@ -37,6 +37,7 @@ evidence ID không nhạy cảm vào repository.
 | Security Owner | `@residoken-wq` | accountable control owner; no self-sign-off/waiver | GOV-FOUNDER-2026-001 | 2026-09-01 | GH-ISSUE-16-FOUNDER-ACK-V1 | INTERIM — INDEPENDENT SIGN-OFF REQUIRED |
 | Privacy/DPO role | `@residoken-wq` | accountable HRI owner; no self-sign-off | GOV-FOUNDER-2026-001 | 2026-09-01 | GH-ISSUE-16-FOUNDER-ACK-V1 | INTERIM — INDEPENDENT SIGN-OFF REQUIRED |
 | Solution Architect | `@residoken-wq` | ADR, boundary, NFR | GOV-FOUNDER-2026-001 | 2026-09-01 | GH-ISSUE-16-FOUNDER-ACK-V1 | ACCEPTED — EFFECTIVE 2026-09-01 |
+| IT / IdP Tenant Owner | `@residoken-wq` | IdP tenant, OIDC registration, lifecycle coordination, fallback | Issue #20 assignment | 2026-09-02 | GH-ISSUE-20-IT-OWNER-ASSIGN-V1 | ACCEPTED — DEC-004 VALUES OPEN |
 | Data Owner — Admission | `@residoken-wq` | classification, access, quality, minimization | GOV-FOUNDER-2026-001 | 2026-09-01 | GH-ISSUE-16-FOUNDER-ACK-V1 | ACCEPTED — EFFECTIVE 2026-09-01 |
 | Campus Pilot Owner | `@residoken-wq` | synthetic pilot preparation, UAT plan, rollback | GOV-FOUNDER-2026-001 | 2026-09-01 | GH-ISSUE-16-FOUNDER-ACK-V1 | ACCEPTED — SYNTHETIC PILOT ONLY |
 | Independent Security/Privacy Reviewer | `@phamhanghula-ui` | independent G0 threat/privacy review; no risk-waiver authority | Issue #16 nomination | 2026-09-02 | GH-ISSUE-16-INDEP-REVIEWER-ACK-V1 | ACCEPTED — REVIEW NOT YET SIGNED OFF |
