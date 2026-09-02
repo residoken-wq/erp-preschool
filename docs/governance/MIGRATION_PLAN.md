@@ -24,6 +24,10 @@ data classification review.
 4. DDL lock/downtime, index build, capacity và rollback/forward recovery được review.
 5. Contract/API deploy order dùng expand-contract khi cần zero/minimal downtime.
 
+Runner giữ session advisory lock để chỉ một tiến trình migrate tại một thời điểm,
+quản lý outer transaction để DDL và bản ghi `schema_migrations` commit cùng nhau,
+và lưu SHA-256 checksum. Các row từ runner cũ được bootstrap checksum một lần; từ
+lần chạy sau, file đã apply bị sửa hoặc biến mất sẽ fail closed trước migration mới.
+
 Không gộp mọi domain vào một migration lớn và không sửa `0001`–`0005` để làm test
 trông khớp.
-
