@@ -11,6 +11,7 @@
 | Security Owner | security control, exception/waiver | `@residoken-wq` | INTERIM — no self-sign-off/waiver |
 | Privacy/DPO role | HRI purpose, transfer, retention | `@residoken-wq` | INTERIM — no self-sign-off |
 | Solution Architect | ADR, boundary, NFR | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
+| IT / IdP Tenant Owner | IdP tenant, OIDC registration, lifecycle coordination and fallback | `@residoken-wq` | ACCEPTED — effective 2026-09-02 |
 | Data Owner — Admission | classification, access, quality | `@residoken-wq` | ACCEPTED — effective 2026-09-01 |
 | Campus Pilot Owner | synthetic UAT planning and rollback | `@residoken-wq` | ACCEPTED — synthetic pilot only |
 | Independent Security/Privacy Reviewer | G0 threat/privacy review; no risk-waiver authority | `@phamhanghula-ui` | ACCEPTED — effective 2026-09-02 |
@@ -35,6 +36,11 @@ and the nominated account posted
 [acceptance](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5503933802)
 on 2026-09-02 under evidence ID `GH-ISSUE-16-INDEP-REVIEWER-ACK-V1`.
 Role acceptance does not constitute threat/privacy sign-off or risk acceptance.
+
+IT / IdP Tenant Owner assignment is recorded in
+[Issue #20](https://github.com/residoken-wq/erp-preschool/issues/20#issuecomment-5504506583)
+under evidence ID `GH-ISSUE-20-IT-OWNER-ASSIGN-V1`. This assigns accountability
+but does not approve an IdP/provider, DEC-004 values or self-sign-off.
 
 ## Nhịp quản trị đề xuất
 

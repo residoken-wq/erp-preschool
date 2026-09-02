@@ -102,6 +102,8 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
   - Decision packet: `NS006_IDENTITY_HYBRID_DECISION.md`; không chứa secret/private
     topology và không tự chọn provider hoặc production boundary.
   - Decision intake: [GitHub Issue #20](https://github.com/residoken-wq/erp-preschool/issues/20).
+  - IT/IdP Tenant Owner: `@residoken-wq`, assigned effective 02/09/2026 under
+    [evidence `GH-ISSUE-20-IT-OWNER-ASSIGN-V1`](https://github.com/residoken-wq/erp-preschool/issues/20#issuecomment-5504506583).
   - Evidence: ADR accepted và reviewed data-flow diagram.
 
 - [ ] **NS-007 — Gate G0 review** (`PENDING`)
