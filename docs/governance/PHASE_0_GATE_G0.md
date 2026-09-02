@@ -1,27 +1,26 @@
 # Phase 0 — Gate G0 Evidence
 
 **Gate status: NOT READY FOR PASS**  
-**Ngày đánh giá:** 31/08/2026
+**Ngày đánh giá:** 02/09/2026
 
 | Exit criterion | Evidence | Status |
 |---|---|---|
 | Một canonical source | Source Promotion Manifest: 90/90 checksum match | PASS |
 | CI từ clean checkout | local baseline commit `b533f75`; remote `main` commit `21e5f42`; GitHub Actions run `33293376641` | PASS |
-| Named Product/Security/Data/Pilot owners | GOV-FOUNDER-2026-001; Program Governance | PARTIAL — founder roles effective 01/09/2026; Security/Privacy interim; `@phamhanghula-ui` reviewer acceptance pending |
+| Named Product/Security/Data/Pilot owners | GOV-FOUNDER-2026-001; Program Governance; GH-ISSUE-16-INDEP-REVIEWER-ACK-V1 | PASS — founder roles effective 01/09/2026; independent reviewer accepted 02/09/2026; Security/Privacy owners remain interim/no self-sign-off |
 | 28 SOP mapped/deduplicated | Canonical SOP Register; source count discrepancy recorded | PASS baseline; approval pending |
-| Decision Register có owner/deadline | role owner và gate recorded | PASS baseline; named owners pending |
+| Decision Register có owner/deadline | role owner và gate recorded | PASS baseline; open decisions still require disposition |
 | Backlog Phase 1–2 đạt DoR | Backlog + Traceability baseline | REVIEW REQUIRED |
 | Threat/data-flow baseline reviewed | `erp-preschool-threat-model.md`; assumptions validated | REVIEW REQUIRED — Security/Privacy owner sign-off |
 | Test/environment strategy | Environment and Test Strategy | REVIEW REQUIRED |
 
 ## Điều kiện còn thiếu để ký PASS
 
-1. `@phamhanghula-ui` xác nhận nhận independent Security/Privacy reviewer role bằng
-   `GH-ISSUE-16-INDEP-REVIEWER-ACK-V1`; founder interim owner không tự sign-off.
-2. Security/Privacy owner + independent reviewer review threat model và đưa TM-001/TM-004 cùng các high
+1. Security/Privacy owner + independent reviewer review threat model và đưa TM-001/TM-004 cùng các high
    threats vào Phase 1 backlog/gate.
-3. Mở lại required approval theo DEC-022 trước product/production hoặc HRI thật.
-4. Product/Architecture/Security/Privacy review backlog, traceability và open decisions.
+2. Mở lại required approval theo DEC-022 trước product/production hoặc HRI thật.
+3. Product/Architecture/Security/Privacy review backlog, traceability và open decisions,
+   gồm DEC-004/DEC-021 tại Issue #20.
 
 ## Execution evidence ngày 30/08/2026
 
