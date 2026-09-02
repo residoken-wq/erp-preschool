@@ -16,6 +16,7 @@
 | `ENVIRONMENT_AND_TEST_STRATEGY.md` | environments, synthetic data và test pyramid |
 | `THREAT_MODEL_CONTEXT.md` | known evidence and questions before final threat model |
 | `NEXT_STEPS_CHECKLIST.md` | ordered G0 closure and gated Phase 1 kickoff checklist |
+| `NS006_IDENTITY_HYBRID_DECISION.md` | decision intake for enterprise IdP and hybrid component/data boundary |
 
 Delivery artifacts: `../backlog/PHASE_1_2_BACKLOG.md` và
 `../traceability/PHASE_1_2_TRACEABILITY.md`.

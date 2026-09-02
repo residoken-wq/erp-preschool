@@ -1,6 +1,6 @@
 # Next Steps Checklist — G0 Closure to Phase 1
 
-**Cập nhật:** 31/08/2026
+**Cập nhật:** 02/09/2026
 **Nguyên tắc:** Không bắt đầu code Phase 1 hoặc nhập HRI thật trước khi Gate G0 được
 ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không phải approval.
 
@@ -61,7 +61,7 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
     khác vẫn bật. Bắt buộc chạy `apply-review-gate` trước product/production hoặc
     HRI thật; deferment không phải G0 approval.
 
-- [ ] **NS-004 — Chỉ định governance owners và pilot campus** (`PARTIAL — REVIEWER ACCEPTANCE REQUIRED`)
+- [x] **NS-004 — Chỉ định governance owners và pilot campus** (`COMPLETE — EVIDENCE PR REQUIRES INDEPENDENT REVIEW`)
   - Owner role: Executive Sponsor.
   - Required: Product Owner, Security Owner, Privacy/Data Owner, SOP Owner, Pilot
     Process Owner và campus pilot.
@@ -80,22 +80,26 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
   - Pilot decision: `DOC-PILOT-SCOPE-2026-V1` approved effective 01/09/2026 for
     `KIDS-EDU-GROUP` / `CAMPUS-01-HCM`, `Asia/Ho_Chi_Minh`, SOP OS +
     Lead-to-Enrollment; all domains not explicitly included are excluded.
-  - Independent reviewer `@phamhanghula-ui` is nominated and has been
-    [asked to accept](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473623519).
-    Remaining: acceptance evidence `GH-ISSUE-16-INDEP-REVIEWER-ACK-V1`, then
-    independent threat/privacy review; detailed UAT/rollback remains a later
-    readiness gate and is not production approval.
+  - Independent reviewer `@phamhanghula-ui` was
+    [asked to accept](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5473623519)
+    and [accepted from the verified account](https://github.com/residoken-wq/erp-preschool/issues/16#issuecomment-5503933802)
+    on 02/09/2026 under evidence ID `GH-ISSUE-16-INDEP-REVIEWER-ACK-V1`.
+  - Role acceptance is not threat/privacy sign-off. Detailed UAT/rollback remains
+    a later readiness gate and is not production approval.
 
-- [ ] **NS-005 — Security/Privacy sign-off threat model** (`BLOCKED — REVIEWER ACCEPTANCE PENDING`)
+- [ ] **NS-005 — Security/Privacy sign-off threat model** (`READY — INDEPENDENT REVIEW PENDING`)
   - Owner role: Security Owner + Privacy/Data Owner.
   - Review: `erp-preschool-threat-model.md`; xác nhận TM-001/TM-004 là release
     blocker và disposition cho toàn bộ threat `high`.
   - Evidence: reviewer, date, decision, accepted mitigation/waiver owner/deadline.
 
-- [ ] **NS-006 — Chốt kiến trúc identity và hybrid boundary** (`BLOCKED`)
+- [ ] **NS-006 — Chốt kiến trúc identity và hybrid boundary** (`DECISION INTAKE READY — APPROVAL BLOCKED`)
   - Owner role: Architecture + Security + Privacy/IT.
   - Decisions: DEC-004 enterprise IdP/MFA/session/claim mapping và DEC-021 phân bố
     component/data, region, ingress/WAF, TLS/mTLS, firewall, secret/KMS.
+  - Decision packet: `NS006_IDENTITY_HYBRID_DECISION.md`; không chứa secret/private
+    topology và không tự chọn provider hoặc production boundary.
+  - Decision intake: [GitHub Issue #20](https://github.com/residoken-wq/erp-preschool/issues/20).
   - Evidence: ADR accepted và reviewed data-flow diagram.
 
 - [ ] **NS-007 — Gate G0 review** (`PENDING`)

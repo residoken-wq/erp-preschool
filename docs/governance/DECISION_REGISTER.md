@@ -6,10 +6,10 @@ ví dụ. Mỗi quyết định được chấp nhận phải tạo/cập nhật
 | ID | Quyết định cần chốt | Owner role | Hạn gate | Trạng thái | Ghi chú |
 |---|---|---|---|---|---|
 | DEC-000 | Root là application source canonical | Product/Architecture | G0 | APPROVED 30/08/2026 | Evidence: Source Promotion Manifest |
-| DEC-001 | Chỉ định program/domain/security/privacy owners | Sponsor | G0 | PARTIAL — REVIEWER ACCEPTANCE PENDING | GOV-FOUNDER-2026-001 effective 01/09/2026; `@phamhanghula-ui` nominated, not yet accepted |
+| DEC-001 | Chỉ định program/domain/security/privacy owners | Sponsor | G0 | APPROVED — REVIEWER ACCEPTED 02/09/2026 | GOV-FOUNDER-2026-001; `@phamhanghula-ui` acceptance evidence `GH-ISSUE-16-INDEP-REVIEWER-ACK-V1`; independent sign-off remains NS-005 |
 | DEC-002 | Pilot campus và phạm vi organization | Product/Sponsor | G0 | APPROVED — BASELINE 01/09/2026 | DOC-PILOT-SCOPE-2026-V1: KIDS-EDU-GROUP/CAMPUS-01-HCM, Asia/Ho_Chi_Minh, SOP OS + Lead-to-Enrollment; all other domains excluded |
 | DEC-003 | Hosting model | Architecture/Security/Privacy | G1 | APPROVED 30/08/2026 | Hybrid; chi tiết topology ở DEC-021 |
-| DEC-004 | Enterprise IdP/OIDC, MFA và account lifecycle | Security/IT | G1 | OPEN | Development actor bị cấm ngoài local/test |
+| DEC-004 | Enterprise IdP/OIDC, MFA và account lifecycle | Security/IT | G1 | OPEN — INTAKE READY | `NS006_IDENTITY_HYBRID_DECISION.md`; Issue #20; development actor bị cấm ngoài local/test |
 | DEC-005 | PostgreSQL topology, HA, backup, RPO/RTO | Architecture/SRE | G1 | OPEN | Không tự gán RPO/RTO |
 | DEC-006 | Object storage, malware scanner và signed access | Security/SRE | G1 | OPEN | HRI document path |
 | DEC-007 | Secret manager, KMS/key rotation và audit access | Security/SRE | G1 | OPEN | Không lưu secret trong repo |
@@ -26,7 +26,7 @@ ví dụ. Mỗi quyết định được chấp nhận phải tạo/cập nhật
 | DEC-018 | AI use-case risk taxonomy, eval threshold và kill switch | AI Gov/Product/Security | trước AI-0 | OPEN | Recommendation/shadow mode đầu tiên |
 | DEC-019 | Internet exposure của portal/API | Architecture/Security | G1 | APPROVED 30/08/2026 | Parent/mobile API và admin portal đều Internet-facing |
 | DEC-020 | Dữ liệu được phép trước G1 | Product/Privacy/Security | G1 | APPROVED 30/08/2026 | Chỉ synthetic/de-identified; cấm HRI thật |
-| DEC-021 | Phân bố component/data giữa cloud/on-prem, region, TLS/mTLS và network segmentation | Architecture/Security/Privacy | G1 | OPEN | Bắt buộc trước Internet deployment |
+| DEC-021 | Phân bố component/data giữa cloud/on-prem, region, TLS/mTLS và network segmentation | Architecture/Security/Privacy | G1 | OPEN — INTAKE READY | `NS006_IDENTITY_HYBRID_DECISION.md`; Issue #20; bắt buộc trước Internet deployment |
 | DEC-022 | Tạm defer GitHub required approval/CODEOWNERS review | Repository Owner | trước product/production hoặc HRI thật | TEMPORARY DEFERMENT 31/08/2026 | Giữ strict CI/PR/admin/linear/no-force-delete; bật lại bằng `apply-review-gate`; không phải G0 approval |
 
 ## Mẫu bằng chứng khi đóng quyết định
