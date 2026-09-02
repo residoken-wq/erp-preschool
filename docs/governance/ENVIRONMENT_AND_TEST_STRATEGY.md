@@ -46,5 +46,6 @@ review vẫn bắt buộc; khi thêm import/upload/AI surface phải tích hợp
 Từ application root, dùng `./scripts/local-services.sh start` sau khi máy hoặc
 Docker daemon restart. Lệnh chạy migration/seed idempotent, chờ API/Web ready và
 không xóa PostgreSQL/MinIO volumes. Dùng `rebuild` sau khi source hoặc dependency
-thay đổi; `status`, `logs`, `restart` và `stop` phục vụ vận hành local. Trước G1,
-mọi lần chạy chỉ được dùng synthetic/de-identified data.
+thay đổi; `status`, `logs`, `restart`, `smoke` và `stop` phục vụ vận hành local.
+`smoke` chờ API/Web rồi chạy suite synthetic API/security với `API_ORIGIN` lấy từ
+`LOCAL_API_ORIGIN`. Trước G1, mọi lần chạy chỉ được dùng synthetic/de-identified data.

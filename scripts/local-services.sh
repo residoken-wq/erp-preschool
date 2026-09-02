@@ -7,7 +7,9 @@ project_root="$(cd -- "${script_dir}/.." && pwd)"
 cd "${project_root}"
 
 compose=(docker compose)
-api_health_url="${LOCAL_API_HEALTH_URL:-http://localhost:3001/api/v1/health}"
+api_origin="${LOCAL_API_ORIGIN:-http://localhost:3001/api/v1}"
+api_origin="${api_origin%/}"
+api_health_url="${LOCAL_API_HEALTH_URL:-${api_origin}/health}"
 web_url="${LOCAL_WEB_URL:-http://localhost:3000}"
 wait_attempts="${LOCAL_START_WAIT_ATTEMPTS:-60}"
 wait_interval_seconds="${LOCAL_START_WAIT_INTERVAL_SECONDS:-2}"
@@ -27,6 +29,21 @@ require_positive_integer() {
     echo "${name} must be a positive integer; received: ${value}" >&2
     exit 2
   fi
+}
+
+run_pnpm() {
+  if command -v pnpm >/dev/null 2>&1; then
+    pnpm "$@"
+    return
+  fi
+
+  if command -v corepack >/dev/null 2>&1; then
+    corepack pnpm "$@"
+    return
+  fi
+
+  echo "Missing required command: pnpm or corepack" >&2
+  exit 1
 }
 
 wait_for_url() {
@@ -84,6 +101,19 @@ start_services() {
   show_urls
 }
 
+run_smoke() {
+  require_command curl
+  require_positive_integer "LOCAL_START_WAIT_ATTEMPTS" "${wait_attempts}"
+  require_positive_integer "LOCAL_START_WAIT_INTERVAL_SECONDS" "${wait_interval_seconds}"
+  wait_for_url "API" "${api_health_url}"
+  wait_for_url "Web" "${web_url}"
+
+  (
+    export API_ORIGIN="${api_origin}"
+    run_pnpm smoke
+  )
+}
+
 command="${1:-start}"
 if (($# > 0)); then
   shift
@@ -112,6 +142,9 @@ case "${command}" in
     fi
     "${compose[@]}" logs --follow --tail "${LOCAL_LOG_TAIL:-200}" "$@"
     ;;
+  smoke)
+    run_smoke
+    ;;
   stop)
     require_command docker
     "${compose[@]}" stop
@@ -127,6 +160,7 @@ Commands:
   restart            Stop and start the local product stack
   status             Show all local service states
   logs [services...] Follow logs (defaults: api web worker migrate)
+  smoke              Wait for API/Web and run the synthetic API/security smoke suite
   stop               Stop services without deleting persistent volumes
   help               Show this help
 
@@ -134,6 +168,7 @@ Optional environment variables:
   LOCAL_START_WAIT_ATTEMPTS
   LOCAL_START_WAIT_INTERVAL_SECONDS
   LOCAL_API_HEALTH_URL
+  LOCAL_API_ORIGIN
   LOCAL_WEB_URL
   LOCAL_LOG_TAIL
 EOF
