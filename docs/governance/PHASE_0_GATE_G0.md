@@ -16,8 +16,8 @@
 
 ## Điều kiện còn thiếu để ký PASS
 
-1. Security/Privacy owner + independent reviewer review threat model và đưa TM-001/TM-004 cùng các high
-   threats vào Phase 1 backlog/gate.
+1. Security/Privacy owner + independent reviewer hoàn tất review tại Issue #22 và
+   đưa TM-001/TM-004 cùng các high threats vào Phase 1 backlog/gate.
 2. Mở lại required approval theo DEC-022 trước product/production hoặc HRI thật.
 3. Product/Architecture/Security/Privacy review backlog, traceability và open decisions,
    gồm DEC-004/DEC-021 tại Issue #20.

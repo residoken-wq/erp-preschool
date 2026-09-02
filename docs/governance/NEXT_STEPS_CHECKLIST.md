@@ -91,6 +91,8 @@ ký PASS. Mỗi checkbox chỉ được đóng khi có evidence; `TBD` không ph
   - Owner role: Security Owner + Privacy/Data Owner.
   - Review: `erp-preschool-threat-model.md`; xác nhận TM-001/TM-004 là release
     blocker và disposition cho toàn bộ threat `high`.
+  - Review intake: [GitHub Issue #22](https://github.com/residoken-wq/erp-preschool/issues/22),
+    assigned to `@phamhanghula-ui`.
   - Evidence: reviewer, date, decision, accepted mitigation/waiver owner/deadline.
 
 - [ ] **NS-006 — Chốt kiến trúc identity và hybrid boundary** (`DECISION INTAKE READY — APPROVAL BLOCKED`)
