@@ -9,7 +9,7 @@ cd "${project_root}"
 compose=(docker compose)
 api_origin="${LOCAL_API_ORIGIN:-http://localhost:3001/api/v1}"
 api_origin="${api_origin%/}"
-api_health_url="${LOCAL_API_HEALTH_URL:-${api_origin}/health}"
+api_health_url="${LOCAL_API_HEALTH_URL:-${api_origin}/health/ready}"
 web_url="${LOCAL_WEB_URL:-http://localhost:3000}"
 wait_attempts="${LOCAL_START_WAIT_ATTEMPTS:-60}"
 wait_interval_seconds="${LOCAL_START_WAIT_INTERVAL_SECONDS:-2}"
@@ -70,7 +70,7 @@ show_urls() {
 
 Local product URLs:
   Web:           ${web_url}
-  API health:    ${api_health_url}
+  API readiness: ${api_health_url}
   MinIO console: http://localhost:9001
 
 Only synthetic/de-identified data is allowed before Gate G1.

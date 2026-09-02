@@ -21,7 +21,7 @@ async function expectStatus(path, status, init = {}) {
 
 async function waitForHealth() {
   for (let attempt = 1; attempt <= 30; attempt += 1) {
-    try { return await request('/health'); } catch (error) {
+    try { return await request('/health/ready'); } catch (error) {
       if (attempt === 30) throw error;
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
@@ -29,8 +29,12 @@ async function waitForHealth() {
 }
 
 const suffix = Date.now();
-await waitForHealth();
+const readiness = await waitForHealth();
+if (readiness.status !== 'ok' || readiness.database !== 'ok') throw new Error('API readiness invariant failed');
 const hardened = await fetch(`${origin}/health`, { headers });
+if (!hardened.ok) throw new Error(`API liveness failed with HTTP ${hardened.status}`);
+const liveness = await hardened.json();
+if (liveness.status !== 'ok' || 'database' in liveness) throw new Error('API liveness must not depend on database status');
 for (const header of ['x-content-type-options', 'x-frame-options', 'content-security-policy', 'cache-control']) {
   if (!hardened.headers.get(header)) throw new Error(`Missing security header: ${header}`);
 }

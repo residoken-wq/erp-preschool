@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { hasRequiredPermissions } from './permissions.js';
+import type { ActorContext } from '@sop-os/contracts';
+import { canActivateRequest, hasRequiredPermissions } from './permissions.js';
+
+const actor: ActorContext = {
+  actorId: '00000000-0000-7000-8000-000000001001',
+  organizationId: '00000000-0000-7000-8000-000000000001',
+  campusIds: [],
+  permissions: ['lead:read'],
+  correlationId: '00000000-0000-7000-8000-000000000099'
+};
 
 describe('permission policy', () => {
   it('accepts an exact permission', () => {
@@ -16,5 +25,14 @@ describe('permission policy', () => {
 
   it('allows the development adapter only through its explicit wildcard', () => {
     expect(hasRequiredPermissions(['development:*'], ['audit:read'])).toBe(true);
+  });
+
+  it('allows an unauthenticated public probe outside development', () => {
+    expect(canActivateRequest(undefined, [], true, 'oidc')).toBe(true);
+  });
+
+  it('keeps non-public routes deny-by-default outside development', () => {
+    expect(canActivateRequest(undefined, [], false, 'oidc')).toBe(false);
+    expect(canActivateRequest(actor, ['lead:update'], false, 'oidc')).toBe(false);
   });
 });

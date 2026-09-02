@@ -9,7 +9,8 @@ headers; it must not be enabled in production.
 
 | Method | Route | Purpose |
 |---|---|---|
-| GET | `/health` | Service and database health |
+| GET | `/health` | Public process liveness; does not query dependencies |
+| GET | `/health/ready` | Public readiness; returns 200 only when PostgreSQL is reachable, otherwise 503 |
 | GET | `/context` | Current user, roles, scopes, and campuses |
 | GET | `/dashboard/summary` | Operational KPI summary |
 | GET | `/tasks` | Current actor's work queue |
