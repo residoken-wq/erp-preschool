@@ -24,6 +24,7 @@
     "local:restart": "bash scripts/local-services.sh restart",
     "local:status": "bash scripts/local-services.sh status",
     "local:logs": "bash scripts/local-services.sh logs",
+    "local:smoke": "bash scripts/local-services.sh smoke",
     "local:stop": "bash scripts/local-services.sh stop",
     "github:protection:verify": "bash scripts/github-protection.sh verify",
     "github:protection:bootstrap": "bash scripts/github-protection.sh apply-bootstrap",
