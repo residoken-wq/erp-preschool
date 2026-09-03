@@ -47,7 +47,7 @@ test('smoke waits for readiness and forwards normalized API origin to pnpm', asy
     });
 
     assert.equal(result.status, 0, result.stderr);
-    assert.match(result.stdout, /API: ready \(http:\/\/127\.0\.0\.1:3999\/api\/v1\/health\)/);
+    assert.match(result.stdout, /API: ready \(http:\/\/127\.0\.0\.1:3999\/api\/v1\/health\/ready\)/);
     assert.match(result.stdout, /Web: ready/);
     assert.equal(await readFile(logPath, 'utf8'), 'http://127.0.0.1:3999/api/v1|smoke\n');
   } finally {

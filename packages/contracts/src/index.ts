@@ -22,6 +22,10 @@ export type HealthResponse = {
   timestamp: string;
 };
 
+export type ReadinessResponse = HealthResponse & {
+  database: 'ok';
+};
+
 export const leadStatuses = [
   'NEW', 'ASSIGNED', 'CONTACTED', 'QUALIFIED', 'NURTURING',
   'CONVERTED', 'DISQUALIFIED', 'LOST', 'DUPLICATE', 'ARCHIVED'

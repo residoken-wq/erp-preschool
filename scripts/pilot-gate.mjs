@@ -15,10 +15,12 @@ async function check(path) {
   return { response, body: await response.json() };
 }
 
-const health = await check('/health');
-if (health.body.status !== 'ok' || health.body.database !== 'ok') throw new Error('Health gate failed');
+const liveness = await check('/health');
+if (liveness.body.status !== 'ok' || 'database' in liveness.body) throw new Error('Liveness gate failed');
+const readiness = await check('/health/ready');
+if (readiness.body.status !== 'ok' || readiness.body.database !== 'ok') throw new Error('Readiness gate failed');
 for (const name of ['x-content-type-options', 'x-frame-options', 'content-security-policy', 'cache-control']) {
-  if (!health.response.headers.get(name)) throw new Error(`Security header missing: ${name}`);
+  if (!liveness.response.headers.get(name)) throw new Error(`Security header missing: ${name}`);
 }
 
 await check('/context');
@@ -29,7 +31,8 @@ if (!audit.body.valid) throw new Error('Audit integrity gate failed');
 console.log(JSON.stringify({
   checkedAt: new Date().toISOString(),
   origin,
-  health: 'PASS',
+  liveness: 'PASS',
+  readiness: 'PASS',
   securityHeaders: 'PASS',
   authenticatedContext: 'PASS',
   dashboard: 'PASS',

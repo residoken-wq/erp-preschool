@@ -31,7 +31,8 @@ cp .env.example .env
 ```
 
 - Web: http://localhost:3000
-- API health: http://localhost:3001/api/v1/health
+- API liveness: http://localhost:3001/api/v1/health
+- API readiness (gồm PostgreSQL): http://localhost:3001/api/v1/health/ready
 - MinIO console: http://localhost:9001
 
 Sau khi restart máy, chạy lại từ application root:
