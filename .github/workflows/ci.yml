@@ -30,7 +30,7 @@ jobs:
       APP_ORIGIN: http://localhost:3000
       AUTH_MODE: development
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v4
         with:
           version: 10.15.1
@@ -56,5 +56,5 @@ jobs:
   compose-config:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: docker compose config --quiet
