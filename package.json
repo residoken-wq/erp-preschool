@@ -18,6 +18,7 @@
     "data:guard": "node scripts/data-policy-guard.mjs",
     "db:reset:dev": "node scripts/reset-dev.mjs",
     "smoke": "node scripts/smoke.mjs",
+    "outbox:smoke": "node scripts/outbox-smoke.mjs",
     "pilot:gate": "node scripts/pilot-gate.mjs",
     "local:start": "bash scripts/local-services.sh start",
     "local:rebuild": "bash scripts/local-services.sh rebuild",
