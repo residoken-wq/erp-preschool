@@ -1,13 +1,17 @@
 import { Body, Controller, Get, Inject, Param, Patch, Query } from '@nestjs/common';
-import type { ActorContext, DashboardSummary } from '@sop-os/contracts';
+import type { ActorContext, DashboardSummary, TaskItem } from '@sop-os/contracts';
 import type { Pool } from 'pg';
 import { CurrentActor } from '../../platform/actor-context.js';
 import { PG_POOL } from '../../platform/database.module.js';
 import { RequirePermissions } from '../../platform/permissions.js';
+import { TaskService } from './task.service.js';
 
 @Controller()
 export class OperationsController {
-  constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
+  constructor(
+    @Inject(PG_POOL) private readonly pool: Pool,
+    private readonly taskService: TaskService
+  ) {}
 
   @Get('context')
   @RequirePermissions('identity:read')
@@ -64,15 +68,8 @@ export class OperationsController {
 
   @Get('tasks')
   @RequirePermissions('task:read')
-  async tasks(@CurrentActor() actor: ActorContext, @Query('status') status?: string): Promise<Record<string, unknown>[]> {
-    const result = await this.pool.query<Record<string, unknown>>(
-      `SELECT id, title, description, priority, status, due_at, related_object_type, related_object_id, row_version,
-              CASE WHEN due_at < now() AND status IN ('OPEN','IN_PROGRESS') THEN true ELSE false END AS overdue
-       FROM work_items WHERE organization_id = $1 AND assignee_user_id = $2
-         AND ($3::text IS NULL OR status = $3) ORDER BY due_at NULLS LAST LIMIT 100`,
-      [actor.organizationId, actor.actorId, status ?? null]
-    );
-    return result.rows;
+  tasks(@CurrentActor() actor: ActorContext, @Query('status') status?: string): Promise<TaskItem[]> {
+    return this.taskService.list(actor, status);
   }
 
   @Patch('tasks/:id')
@@ -80,18 +77,9 @@ export class OperationsController {
   async updateTask(
     @CurrentActor() actor: ActorContext,
     @Param('id') id: string,
-    @Body() command: { status: 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'; rowVersion: number }
-  ): Promise<Record<string, unknown>> {
-    const result = await this.pool.query<Record<string, unknown>>(
-      `UPDATE work_items SET status = $4,
-         completed_at = CASE WHEN $4 = 'DONE' THEN now() ELSE NULL END,
-         updated_at = now(), row_version = row_version + 1
-       WHERE id = $1 AND organization_id = $2 AND assignee_user_id = $3 AND row_version = $5
-       RETURNING id, title, status, completed_at, row_version`,
-      [id, actor.organizationId, actor.actorId, command.status, command.rowVersion]
-    );
-    if (!result.rows[0]) throw new Error('Task not found or changed by another user');
-    return result.rows[0];
+    @Body() command: unknown
+  ): Promise<TaskItem> {
+    return this.taskService.update(actor, id, command);
   }
 
   @Get('audit-events')

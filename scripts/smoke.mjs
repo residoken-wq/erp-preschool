@@ -43,6 +43,38 @@ await request('/dashboard/summary');
 await request('/processes');
 await request('/sops');
 await request('/applications');
+const tasks = await request('/tasks');
+const task = tasks.find((item) => item.status !== 'CANCELLED');
+if (!task) throw new Error('Task smoke requires one non-cancelled synthetic work item');
+const outsideCampusHeaders = { 'x-campus-ids': '00000000-0000-7000-8000-000000000999' };
+const outsideCampusTasks = await request('/tasks', { headers: outsideCampusHeaders });
+if (outsideCampusTasks.length !== 0) throw new Error('Task campus scope invariant failed');
+await expectStatus(`/tasks/${task.id}`, 404, {
+  method: 'PATCH',
+  headers: outsideCampusHeaders,
+  body: JSON.stringify({ status: 'DONE', rowVersion: task.rowVersion })
+});
+const nextTaskStatus = task.status === 'OPEN' ? 'IN_PROGRESS' : 'OPEN';
+const updatedTask = await request(`/tasks/${task.id}`, {
+  method: 'PATCH',
+  body: JSON.stringify({ status: nextTaskStatus, rowVersion: task.rowVersion })
+});
+if (updatedTask.status !== nextTaskStatus || updatedTask.rowVersion !== task.rowVersion + 1) {
+  throw new Error('Task status/row-version invariant failed');
+}
+await expectStatus(`/tasks/${task.id}`, 409, {
+  method: 'PATCH',
+  body: JSON.stringify({ status: 'DONE', rowVersion: task.rowVersion })
+});
+await expectStatus(`/tasks/${task.id}`, 403, {
+  method: 'PATCH',
+  headers: { 'x-permissions': 'task:read' },
+  body: JSON.stringify({ status: 'DONE', rowVersion: updatedTask.rowVersion })
+});
+await expectStatus(`/tasks/${task.id}`, 400, {
+  method: 'PATCH',
+  body: JSON.stringify({ status: 'DONE', rowVersion: updatedTask.rowVersion, assigneeUserId: 'another-user' })
+});
 const lead = await request('/leads', {
   method: 'POST',
   body: JSON.stringify({

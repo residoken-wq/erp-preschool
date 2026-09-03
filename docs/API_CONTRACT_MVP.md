@@ -13,8 +13,8 @@ headers; it must not be enabled in production.
 | GET | `/health/ready` | Public readiness; returns 200 only when PostgreSQL is reachable, otherwise 503 |
 | GET | `/context` | Current user, roles, scopes, and campuses |
 | GET | `/dashboard/summary` | Operational KPI summary |
-| GET | `/tasks` | Current actor's work queue |
-| PATCH | `/tasks/{id}` | Complete or change a task with row-version guard |
+| GET | `/tasks` | Current actor's work queue; optional validated `status` filter |
+| PATCH | `/tasks/{id}` | Change task status with strict body, actor scope and row-version guard |
 | GET | `/audit-events` | Controlled audit search |
 
 ## Process and SOP governance
@@ -71,3 +71,6 @@ gated sau G1, có Privacy/Security approval và negative test cập nhật.
 - Exception/close/reverse actions require a reason.
 - Campus scope is enforced by the API, independent of UI visibility.
 - Event payloads carry identifiers and state changes, not unnecessary HRI.
+- Task status changes write the business update, audit event and outbox event in
+  one transaction; stale `rowVersion` returns HTTP `409` and objects outside the
+  actor's organization/assignment scope return `404`.

@@ -1,6 +1,7 @@
 'use client';
 
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { TaskBoard, type TaskItem, type TaskStatus } from './task-board';
 
 type Tab = 'overview' | 'leads' | 'applications' | 'sops' | 'tasks';
 type Row = Record<string, unknown>;
@@ -41,10 +42,10 @@ const fallbackSops: Row[] = [
   { id: '2', code: 'ADM-004', title: 'Tiếp nhận Application', process_code: 'ADM-004', version_label: 'v1.0', version_status: 'IN_REVIEW' },
   { id: '3', code: 'ADM-010', title: 'Operational Handover', process_code: 'ADM-010', version_label: 'v1.0', version_status: 'DRAFT' }
 ];
-const fallbackTasks: Row[] = [
-  { id: '1', title: 'APP-2026-0148 thiếu giấy khai sinh', priority: 'HIGH', due_at: 'Quá hạn 2 giờ', status: 'OPEN', overdue: true },
-  { id: '2', title: 'Review hồ sơ APP-2026-0149', priority: 'NORMAL', due_at: 'Hạn 17:00 hôm nay', status: 'IN_PROGRESS', overdue: false },
-  { id: '3', title: 'Liên hệ Lead LEAD-2026-0101', priority: 'URGENT', due_at: 'Trong 1 giờ', status: 'OPEN', overdue: false }
+const fallbackTasks: TaskItem[] = [
+  { id: '1', title: 'APP-2026-0148 thiếu tài liệu synthetic', description: null, priority: 'HIGH', dueAt: 'Quá hạn 2 giờ', status: 'OPEN', relatedObjectType: 'Application', relatedObjectId: null, rowVersion: 1, overdue: true },
+  { id: '2', title: 'Review hồ sơ synthetic APP-2026-0149', description: null, priority: 'NORMAL', dueAt: 'Hạn 17:00 hôm nay', status: 'IN_PROGRESS', relatedObjectType: 'Application', relatedObjectId: null, rowVersion: 1, overdue: false },
+  { id: '3', title: 'Liên hệ Lead synthetic LEAD-2026-0101', description: null, priority: 'URGENT', dueAt: 'Trong 1 giờ', status: 'OPEN', relatedObjectType: 'Lead', relatedObjectId: null, rowVersion: 1, overdue: false }
 ];
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -69,17 +70,19 @@ export function SopOsApp() {
   const [leads, setLeads] = useState<Row[]>(fallbackLeads);
   const [applications, setApplications] = useState<Row[]>(fallbackApplications);
   const [sops, setSops] = useState<Row[]>(fallbackSops);
-  const [tasks, setTasks] = useState<Row[]>(fallbackTasks);
+  const [tasks, setTasks] = useState<TaskItem[]>(fallbackTasks);
   const [query, setQuery] = useState('');
   const [connected, setConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const [leadModal, setLeadModal] = useState(false);
+  const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null);
+  const [taskError, setTaskError] = useState('');
 
   async function refresh(): Promise<void> {
     setLoading(true);
     try {
       const [summaryData, leadPage, applicationPage, sopRows, taskRows] = await Promise.all([
-        api<Summary>('/dashboard/summary'), api<{ data: Row[] }>('/leads?pageSize=100'), api<{ data: Row[] }>('/applications'), api<Row[]>('/sops'), api<Row[]>('/tasks')
+        api<Summary>('/dashboard/summary'), api<{ data: Row[] }>('/leads?pageSize=100'), api<{ data: Row[] }>('/applications'), api<Row[]>('/sops'), api<TaskItem[]>('/tasks')
       ]);
       setSummary(summaryData); setLeads(leadPage.data); setApplications(applicationPage.data); setSops(sopRows); setTasks(taskRows); setConnected(true);
     } catch { setConnected(false); } finally { setLoading(false); }
@@ -87,48 +90,68 @@ export function SopOsApp() {
 
   useEffect(() => { void refresh(); }, []);
 
+  async function updateTask(task: TaskItem, status: TaskStatus): Promise<void> {
+    if (!connected) {
+      setTaskError('Hãy khởi động API/PostgreSQL để cập nhật công việc.');
+      return;
+    }
+    setTaskError('');
+    setUpdatingTaskId(task.id);
+    try {
+      const updated = await api<TaskItem>(`/tasks/${task.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status, rowVersion: task.rowVersion })
+      });
+      setTasks((current) => current.map((item) => item.id === updated.id ? updated : item));
+      setSummary(await api<Summary>('/dashboard/summary'));
+    } catch (caught) {
+      setTaskError(caught instanceof Error ? caught.message : 'Không thể cập nhật công việc');
+      try { setTasks(await api<TaskItem[]>('/tasks')); } catch { /* Keep the last safe UI state. */ }
+    } finally {
+      setUpdatingTaskId(null);
+    }
+  }
+
   const navigation: Array<{ id: Tab; label: string; icon: string }> = [
     { id: 'overview', label: 'Tổng quan', icon: '⌂' }, { id: 'leads', label: 'Lead', icon: '◎' },
     { id: 'applications', label: 'Hồ sơ', icon: '▤' }, { id: 'sops', label: 'Thư viện SOP', icon: '▥' }, { id: 'tasks', label: 'Công việc', icon: '✓' }
   ];
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const rows = tab === 'leads' ? leads : tab === 'applications' ? applications : tab === 'sops' ? sops : tasks;
+    const rows = tab === 'leads' ? leads : tab === 'applications' ? applications : tab === 'sops' ? sops : [];
     return q ? rows.filter((row) => Object.values(row).some((value) => text(value).toLowerCase().includes(q))) : rows;
-  }, [applications, leads, query, sops, tab, tasks]);
+  }, [applications, leads, query, sops, tab]);
 
   return <div className={loading ? 'appShell loading' : 'appShell'}>
     <aside className="sidebar"><div className="brand"><span className="brandMark">S</span><span>SOP OS</span></div><nav className="nav" aria-label="Điều hướng chính">{navigation.map((item) => <button key={item.id} className={tab === item.id ? 'navItem active' : 'navItem'} onClick={() => { setTab(item.id); setQuery(''); }} type="button"><span className="navIcon">{item.icon}</span><span className="navLabel">{item.label}</span></button>)}</nav><div className="sideFoot"><strong>Nguyễn Minh Anh</strong><span>Admission Manager</span></div></aside>
-    <main className="main"><header className="topbar"><span className="breadcrumb">SOP OS / {navigation.find((item) => item.id === tab)?.label}</span><div className="topActions"><select className="campusSelect" aria-label="Cơ sở"><option>Cơ sở Trung tâm</option></select><span className="avatar">MA</span></div></header><div className="content">{!connected && <div className="notice">Đang hiển thị dữ liệu demo. Khởi động API và PostgreSQL để thao tác dữ liệu thật.</div>}{tab === 'overview' ? <Overview summary={summary} tasks={tasks} onCreate={() => setLeadModal(true)} /> : <Records tab={tab} rows={filtered} query={query} setQuery={setQuery} onCreate={() => setLeadModal(true)} />}</div></main>
+    <main className="main"><header className="topbar"><span className="breadcrumb">SOP OS / {navigation.find((item) => item.id === tab)?.label}</span><div className="topActions"><select className="campusSelect" aria-label="Cơ sở"><option>Cơ sở Trung tâm</option></select><span className="avatar">MA</span></div></header><div className="content">{!connected && <div className="notice">Đang hiển thị dữ liệu demo. Khởi động API và PostgreSQL để thao tác dữ liệu thật.</div>}{tab === 'overview' ? <Overview summary={summary} tasks={tasks} onCreate={() => setLeadModal(true)} /> : tab === 'tasks' ? <TaskBoard connected={connected} error={taskError} onUpdate={updateTask} query={query} setQuery={setQuery} tasks={tasks} updatingTaskId={updatingTaskId} /> : <Records tab={tab} rows={filtered} query={query} setQuery={setQuery} onCreate={() => setLeadModal(true)} />}</div></main>
     {leadModal && <LeadModal connected={connected} onClose={() => setLeadModal(false)} onCreated={() => { setLeadModal(false); void refresh(); }} />}
   </div>;
 }
 
-function Overview({ summary, tasks, onCreate }: { summary: Summary; tasks: Row[]; onCreate: () => void }) {
+function Overview({ summary, tasks, onCreate }: { summary: Summary; tasks: TaskItem[]; onCreate: () => void }) {
   const funnelMax = Math.max(summary.leads.total, 1);
   const funnel = [['Lead', summary.leads.total], ['Qualified', summary.leads.qualified], ['Application', summary.applications.total], ['Offered', summary.applications.offered], ['Converted', summary.leads.converted]] as const;
-  return <><div className="pageHead"><div><h1>Tổng quan vận hành</h1><p>Chào buổi sáng, Admission Manager. Đây là các việc cần ưu tiên hôm nay.</p></div><button className="primary" onClick={onCreate} type="button">+ Tạo Lead</button></div><section className="metrics" aria-label="Chỉ số chính"><Metric label="Cần xử lý hôm nay" value={summary.tasks.dueToday} note={`${summary.tasks.overdue} việc quá hạn`} icon="✓" warn /><Metric label="Lead mới" value={summary.leads.new} note={`${summary.leads.qualified} đã qualified`} icon="◎" /><Metric label="Application đang review" value={summary.applications.inReview} note={`${summary.applications.incomplete} hồ sơ thiếu`} icon="▤" warn /><Metric label="SOP Effective" value={summary.sops.effective} note={`${summary.sops.inReview} chờ duyệt`} icon="▥" /></section><div className="dashboardGrid"><section className="panel"><div className="panelHead"><h2>Funnel Lead-to-Enrollment</h2><small>Dữ liệu hiện tại</small></div><div className="funnel">{funnel.map(([label, value]) => <div className="funnelRow" key={label}><span>{label}</span><div className="bar"><span style={{ width: `${Math.max((value / funnelMax) * 100, value ? 7 : 0)}%` }} /></div><strong>{value}</strong></div>)}</div></section><section className="panel"><div className="panelHead"><h2>Ưu tiên xử lý</h2><small>{tasks.length} công việc</small></div>{tasks.slice(0, 4).map((task) => <div className="task" key={text(task.id)}><span className="taskMark" /><div className="taskText"><strong>{text(task.title)}</strong><span>{text(task.due_at)}</span></div><em className={`badge ${task.overdue ? 'overdue' : statusClass(task.status)}`}>{task.overdue ? 'Quá hạn' : text(task.status)}</em></div>)}</section></div></>;
+  return <><div className="pageHead"><div><h1>Tổng quan vận hành</h1><p>Chào buổi sáng, Admission Manager. Đây là các việc cần ưu tiên hôm nay.</p></div><button className="primary" onClick={onCreate} type="button">+ Tạo Lead</button></div><section className="metrics" aria-label="Chỉ số chính"><Metric label="Cần xử lý hôm nay" value={summary.tasks.dueToday} note={`${summary.tasks.overdue} việc quá hạn`} icon="✓" warn /><Metric label="Lead mới" value={summary.leads.new} note={`${summary.leads.qualified} đã qualified`} icon="◎" /><Metric label="Application đang review" value={summary.applications.inReview} note={`${summary.applications.incomplete} hồ sơ thiếu`} icon="▤" warn /><Metric label="SOP Effective" value={summary.sops.effective} note={`${summary.sops.inReview} chờ duyệt`} icon="▥" /></section><div className="dashboardGrid"><section className="panel"><div className="panelHead"><h2>Funnel Lead-to-Enrollment</h2><small>Dữ liệu hiện tại</small></div><div className="funnel">{funnel.map(([label, value]) => <div className="funnelRow" key={label}><span>{label}</span><div className="bar"><span style={{ width: `${Math.max((value / funnelMax) * 100, value ? 7 : 0)}%` }} /></div><strong>{value}</strong></div>)}</div></section><section className="panel"><div className="panelHead"><h2>Ưu tiên xử lý</h2><small>{tasks.length} công việc</small></div>{tasks.slice(0, 4).map((task) => <div className="task" key={task.id}><span className="taskMark" /><div className="taskText"><strong>{task.title}</strong><span>{task.dueAt ?? 'Chưa có hạn'}</span></div><em className={`badge ${task.overdue ? 'overdue' : statusClass(task.status)}`}>{task.overdue ? 'Quá hạn' : text(task.status)}</em></div>)}</section></div></>;
 }
 
 function Metric({ label, value, note, icon, warn }: { label: string; value: number; note: string; icon: string; warn?: boolean }) {
   return <article className="metric"><div className="metricHead"><span>{label}</span><span className="metricIcon">{icon}</span></div><strong>{value}</strong><span className={warn ? 'trend warn' : 'trend'}>{note}</span></article>;
 }
 
-function Records({ tab, rows, query, setQuery, onCreate }: { tab: Exclude<Tab, 'overview'>; rows: Row[]; query: string; setQuery: (value: string) => void; onCreate: () => void }) {
+function Records({ tab, rows, query, setQuery, onCreate }: { tab: Exclude<Tab, 'overview' | 'tasks'>; rows: Row[]; query: string; setQuery: (value: string) => void; onCreate: () => void }) {
   const config = {
     leads: { title: 'Quản lý Lead', subtitle: 'Tiếp nhận, phân loại và theo dõi cơ hội tuyển sinh.', action: '+ Tạo Lead', columns: ['Mã', 'Liên hệ', 'Nguồn', 'Trạng thái', 'Next action'] },
     applications: { title: 'Application', subtitle: 'Theo dõi hồ sơ từ Draft đến Offer.', action: '', columns: ['Mã hồ sơ', 'Học sinh', 'Chương trình', 'Trạng thái', 'Ngày tạo'] },
-    sops: { title: 'Thư viện SOP', subtitle: 'Một nguồn sự thật cho quy trình vận hành đang hiệu lực.', action: '', columns: ['Mã SOP', 'Tiêu đề', 'Quy trình', 'Phiên bản', 'Trạng thái'] },
-    tasks: { title: 'Công việc của tôi', subtitle: 'Danh sách công việc theo SLA và mức ưu tiên.', action: '', columns: ['Công việc', 'Đối tượng', 'Ưu tiên', 'Hạn xử lý', 'Trạng thái'] }
+    sops: { title: 'Thư viện SOP', subtitle: 'Một nguồn sự thật cho quy trình vận hành đang hiệu lực.', action: '', columns: ['Mã SOP', 'Tiêu đề', 'Quy trình', 'Phiên bản', 'Trạng thái'] }
   }[tab];
   return <><div className="pageHead"><div><h1>{config.title}</h1><p>{config.subtitle}</p></div>{config.action && <button className="primary" onClick={onCreate} type="button">{config.action}</button>}</div><div className="toolbar"><input className="searchInput" placeholder="Tìm theo mã hoặc tên…" value={query} onChange={(event) => setQuery(event.target.value)} /><button className="secondary" type="button">Bộ lọc</button></div><section className="panel tablePanel"><div className="tableWrap"><table className="table"><thead><tr>{config.columns.map((column) => <th key={column}>{column}</th>)}</tr></thead><tbody>{rows.map((row) => <RecordCells key={text(row.id)} tab={tab} row={row} />)}</tbody></table></div>{rows.length === 0 && <div className="empty">Không có dữ liệu phù hợp.</div>}</section></>;
 }
 
-function RecordCells({ tab, row }: { tab: Exclude<Tab, 'overview'>; row: Row }) {
+function RecordCells({ tab, row }: { tab: Exclude<Tab, 'overview' | 'tasks'>; row: Row }) {
   if (tab === 'leads') return <tr><td><strong>{text(row.code)}</strong></td><td>{text(row.first_name)} {text(row.last_name)}</td><td>{text(row.source_type)}</td><td><em className={`badge ${statusClass(row.status)}`}>{text(row.status)}</em></td><td>{text(row.next_action_at)}</td></tr>;
   if (tab === 'applications') return <tr><td><strong>{text(row.code)}</strong></td><td>{text(row.first_name)} {text(row.last_name)}</td><td>{text(row.program_code)}</td><td><em className={`badge ${statusClass(row.status)}`}>{text(row.status)}</em></td><td>{text(row.created_at)}</td></tr>;
-  if (tab === 'sops') return <tr><td><strong>{text(row.code)}</strong></td><td>{text(row.title)}</td><td>{text(row.process_code)}</td><td>{text(row.version_label)}</td><td><em className={`badge ${statusClass(row.version_status)}`}>{text(row.version_status)}</em></td></tr>;
-  return <tr><td><strong>{text(row.title)}</strong></td><td>{text(row.related_object_type)}</td><td>{text(row.priority)}</td><td>{text(row.due_at)}</td><td><em className={`badge ${row.overdue ? 'overdue' : statusClass(row.status)}`}>{row.overdue ? 'Quá hạn' : text(row.status)}</em></td></tr>;
+  return <tr><td><strong>{text(row.code)}</strong></td><td>{text(row.title)}</td><td>{text(row.process_code)}</td><td>{text(row.version_label)}</td><td><em className={`badge ${statusClass(row.version_status)}`}>{text(row.version_status)}</em></td></tr>;
 }
 
 function LeadModal({ connected, onClose, onCreated }: { connected: boolean; onClose: () => void; onCreated: () => void }) {
