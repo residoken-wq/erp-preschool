@@ -17,6 +17,9 @@ chỉ đọc; không phát triển song song ở đó.
 - `database/seed`: Seed mẫu không chứa dữ liệu thật.
 - `scripts`: Migration và seed commands.
 
+Worker local dùng `OUTBOX_PROVIDER=development-console`, chỉ log event metadata và
+lưu synthetic receipt; cấu hình này bị từ chối khi `NODE_ENV=production`.
+
 ## Yêu cầu
 
 - Node.js 22 LTS trở lên.
