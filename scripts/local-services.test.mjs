@@ -21,12 +21,59 @@ async function writeExecutable(filePath, content) {
   await chmod(filePath, 0o755);
 }
 
-test('help documents the synthetic smoke command and API origin override', () => {
+test('help documents smoke and guarded demo lifecycle commands', () => {
   const result = runLocalServices('help');
 
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /smoke\s+Wait for API\/Web/);
+  assert.match(result.stdout, /demo-ready\s+Verify services/);
+  assert.match(result.stdout, /demo-reset\s+Replace local DB/);
+  assert.match(result.stdout, /RESET_SYNTHETIC_DEMO/);
   assert.match(result.stdout, /LOCAL_API_ORIGIN/);
+});
+
+test('demo-reset refuses to replace local data without explicit confirmation', async () => {
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'sop-local-demo-reset-guard-'));
+
+  try {
+    await writeExecutable(path.join(binDir, 'docker'), '#!/usr/bin/env bash\nexit 99\n');
+    await writeExecutable(path.join(binDir, 'curl'), '#!/usr/bin/env bash\nexit 99\n');
+    const result = runLocalServices('demo-reset', { PATH: `${binDir}:/usr/bin:/bin` });
+
+    assert.equal(result.status, 2);
+    assert.match(result.stderr, /replaces the local PostgreSQL schema/);
+    assert.match(result.stderr, /LOCAL_DEMO_RESET_CONFIRM=RESET_SYNTHETIC_DEMO/);
+  } finally {
+    await rm(binDir, { recursive: true, force: true });
+  }
+});
+
+test('confirmed demo-reset rebuilds the canonical scenario and runs readiness', async () => {
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'sop-local-demo-reset-'));
+  const dockerLog = path.join(binDir, 'docker.log');
+  const pnpmLog = path.join(binDir, 'pnpm.log');
+
+  try {
+    await writeExecutable(path.join(binDir, 'docker'), '#!/usr/bin/env bash\nprintf "%s\\n" "$*" >> "${LOCAL_DOCKER_LOG}"\n');
+    await writeExecutable(path.join(binDir, 'curl'), '#!/usr/bin/env bash\nexit 0\n');
+    await writeExecutable(path.join(binDir, 'pnpm'), '#!/usr/bin/env bash\nprintf "%s\\n" "$*" >> "${LOCAL_PNPM_LOG}"\n');
+    const result = runLocalServices('demo-reset', {
+      PATH: `${binDir}:/usr/bin:/bin`,
+      LOCAL_DEMO_RESET_CONFIRM: 'RESET_SYNTHETIC_DEMO',
+      LOCAL_DOCKER_LOG: dockerLog,
+      LOCAL_PNPM_LOG: pnpmLog
+    });
+
+    assert.equal(result.status, 0, result.stderr);
+    const dockerCalls = await readFile(dockerLog, 'utf8');
+    assert.match(dockerCalls, /compose stop api worker/);
+    assert.match(dockerCalls, /compose run --rm -e NODE_ENV=development -e ALLOW_DEV_RESET=true migrate/);
+    assert.match(dockerCalls, /compose up -d api worker web/);
+    assert.equal(await readFile(pnpmLog, 'utf8'), 'demo:ready\n');
+    assert.match(result.stdout, /Local demo reset complete/);
+  } finally {
+    await rm(binDir, { recursive: true, force: true });
+  }
 });
 
 test('smoke waits for readiness and forwards normalized API origin to pnpm', async () => {

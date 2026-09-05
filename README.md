@@ -5,6 +5,10 @@ Lead-to-Enrollment. Roadmap triển khai nằm tại `docs/IMPLEMENTATION_ROADMA
 Bản source lồng trong `docs/.../02_Release_Candidate_Source` là snapshot lịch sử
 chỉ đọc; không phát triển song song ở đó.
 
+Kế hoạch ưu tiên cho bản trình diễn hoàn toàn trên máy local nằm tại
+`docs/LOCAL_DEMO_DELIVERY_PLAN.md`. Kế hoạch này chỉ dùng dữ liệu synthetic và
+không thay thế các gate bắt buộc trước khi deploy product hoặc dùng dữ liệu thật.
+
 ## Kiến trúc
 
 - `apps/web`: Next.js Web.
@@ -54,6 +58,17 @@ Các lệnh vận hành local không xóa volume dữ liệu:
 ./scripts/local-services.sh rebuild  # dùng sau khi source/dependency thay đổi
 ./scripts/local-services.sh stop
 ```
+
+Chuẩn bị dataset cố định trước khi demo khách hàng:
+
+```bash
+LOCAL_DEMO_RESET_CONFIRM=RESET_SYNTHETIC_DEMO \
+  ./scripts/local-services.sh demo-reset
+./scripts/local-services.sh demo-ready
+```
+
+Xem checklist tại `docs/runbooks/local-demo.md`. `demo-reset` thay toàn bộ database
+local bằng synthetic seed; không chạy trên môi trường có dữ liệu cần giữ lại.
 
 Có thể dùng alias pnpm tương ứng: `pnpm local:start`, `pnpm local:rebuild`,
 `pnpm local:status`, `pnpm local:logs`, `pnpm local:smoke`, `pnpm local:restart`

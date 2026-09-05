@@ -25,6 +25,7 @@ type OfferRow = {
   program_code: string;
   intake_code: string;
   row_version: string;
+  created_by: string | null;
 };
 
 const offerTransitions: Readonly<Record<string, readonly string[]>> = {
@@ -35,6 +36,12 @@ const offerTransitions: Readonly<Record<string, readonly string[]>> = {
   ACCEPTED: [], DECLINED: [], EXPIRED: [], WITHDRAWN: []
 };
 
+export function assertOfferApprovalSeparation(createdBy: string | null, actorId: string, targetStatus: string): void {
+  if (targetStatus === 'APPROVED' && createdBy === actorId) {
+    throw new ConflictException('Offer author cannot approve their own offer');
+  }
+}
+
 @Injectable()
 export class ApplicationService {
   constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
@@ -43,10 +50,30 @@ export class ApplicationService {
     const result = await this.pool.query<Record<string, unknown>>(
       `SELECT a.id, a.code, a.status, a.campus_id, a.program_code, a.intake_code, a.assigned_user_id,
               a.submitted_at, a.created_at, l.code AS lead_code,
-              p.first_name, p.last_name, count(*) OVER() AS total_count
+              p.first_name, p.last_name,
+              latest_offer.id AS offer_id, latest_offer.code AS offer_code, latest_offer.status AS offer_status,
+              latest_enrollment.id AS enrollment_id, latest_enrollment.code AS enrollment_code,
+              latest_enrollment.status AS enrollment_status, latest_enrollment.handover_status,
+              latest_enrollment.contract_status, latest_enrollment.fee_plan_status,
+              count(*) OVER() AS total_count
        FROM applications a
        LEFT JOIN leads l ON l.id = a.lead_id
        LEFT JOIN persons p ON p.id = l.primary_contact_person_id
+       LEFT JOIN LATERAL (
+         SELECT o.id, o.code, o.status FROM offers o
+         WHERE o.application_id = a.id AND o.organization_id = a.organization_id
+         ORDER BY o.version_number DESC, o.created_at DESC LIMIT 1
+       ) latest_offer ON true
+       LEFT JOIN LATERAL (
+         SELECT e.id, e.code, e.status, h.status AS handover_status,
+                c.status AS contract_status, fp.status AS fee_plan_status
+         FROM enrollments e
+         LEFT JOIN handover_packages h ON h.enrollment_id = e.id
+         LEFT JOIN LATERAL (SELECT status FROM contracts WHERE enrollment_id = e.id ORDER BY version_number DESC LIMIT 1) c ON true
+         LEFT JOIN LATERAL (SELECT status FROM fee_plans WHERE enrollment_id = e.id ORDER BY created_at DESC LIMIT 1) fp ON true
+         WHERE e.application_id = a.id AND e.organization_id = a.organization_id
+         ORDER BY e.created_at DESC LIMIT 1
+       ) latest_enrollment ON true
        WHERE a.organization_id = $1 AND a.campus_id = ANY($2::uuid[])
          AND ($3::text IS NULL OR a.status = $3)
          AND ($4 = '' OR a.code ILIKE '%' || $4 || '%' OR p.first_name || ' ' || p.last_name ILIKE '%' || $4 || '%')
@@ -70,9 +97,9 @@ export class ApplicationService {
       try { applicationStateMachine.transition(application.status, command.to); } catch { throw new ConflictException(`Transition ${application.status} -> ${command.to} is not allowed`); }
       if (['INCOMPLETE', 'WAITLISTED', 'REJECTED'].includes(command.to) && !command.reason?.trim()) throw new BadRequestException('reason is required');
       const result = await client.query<Record<string, unknown>>(
-        `UPDATE applications SET status = $3,
-           submitted_at = CASE WHEN $3 = 'SUBMITTED' THEN now() ELSE submitted_at END,
-           verified_at = CASE WHEN $3 = 'VERIFIED' THEN now() ELSE verified_at END,
+        `UPDATE applications SET status = $3::varchar,
+           submitted_at = CASE WHEN $3::varchar = 'SUBMITTED' THEN now() ELSE submitted_at END,
+           verified_at = CASE WHEN $3::varchar = 'VERIFIED' THEN now() ELSE verified_at END,
            updated_at = now(), row_version = row_version + 1
          WHERE id = $1 AND organization_id = $2 RETURNING id, code, status, row_version`,
         [id, actor.organizationId, command.to]
@@ -109,9 +136,9 @@ export class ApplicationService {
       if (application.status !== 'DECISION_PENDING') throw new ConflictException('Offer requires application in DECISION_PENDING');
       const id = randomUUID();
       const result = await client.query<Record<string, unknown>>(
-        `INSERT INTO offers(id, organization_id, application_id, code, terms_json, valid_until)
-         VALUES ($1, $2, $3, $4, $5::jsonb, $6) RETURNING id, code, status, version_number, valid_until`,
-        [id, actor.organizationId, applicationId, command.code, JSON.stringify(command.terms ?? {}), command.validUntil]
+        `INSERT INTO offers(id, organization_id, application_id, code, terms_json, valid_until, created_by)
+         VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7) RETURNING id, code, status, version_number, valid_until, created_by`,
+        [id, actor.organizationId, applicationId, command.code, JSON.stringify(command.terms ?? {}), command.validUntil, actor.actorId]
       );
       await recordMutation(client, actor, {
         action: 'offer.create', objectType: 'Offer', objectId: id, after: result.rows[0],
@@ -127,20 +154,21 @@ export class ApplicationService {
     try {
       await client.query('BEGIN');
       const current = await client.query<OfferRow>(
-        `SELECT o.id, o.application_id, o.status, o.code, a.campus_id, a.program_code, a.intake_code, o.row_version
+        `SELECT o.id, o.application_id, o.status, o.code, a.campus_id, a.program_code, a.intake_code, o.row_version, o.created_by
          FROM offers o JOIN applications a ON a.id = o.application_id
          WHERE o.id = $1 AND o.organization_id = $2 FOR UPDATE OF o`, [offerId, actor.organizationId]
       );
       const offer = current.rows[0];
       if (!offer || !actor.campusIds.includes(offer.campus_id)) throw new NotFoundException('Offer not found');
       if (!(offerTransitions[offer.status] ?? []).includes(command.to)) throw new ConflictException(`Transition ${offer.status} -> ${command.to} is not allowed`);
+      assertOfferApprovalSeparation(offer.created_by, actor.actorId, command.to);
       if (['DRAFT', 'DECLINED', 'WITHDRAWN'].includes(command.to) && !command.reason?.trim()) throw new BadRequestException('reason is required');
       const result = await client.query<Record<string, unknown>>(
-        `UPDATE offers SET status = $3,
-           approved_by = CASE WHEN $3 = 'APPROVED' THEN $4 ELSE approved_by END,
-           approved_at = CASE WHEN $3 = 'APPROVED' THEN now() ELSE approved_at END,
-           issued_at = CASE WHEN $3 = 'ISSUED' THEN now() ELSE issued_at END,
-           responded_at = CASE WHEN $3 IN ('ACCEPTED','DECLINED') THEN now() ELSE responded_at END,
+        `UPDATE offers SET status = $3::varchar,
+           approved_by = CASE WHEN $3::varchar = 'APPROVED' THEN $4 ELSE approved_by END,
+           approved_at = CASE WHEN $3::varchar = 'APPROVED' THEN now() ELSE approved_at END,
+           issued_at = CASE WHEN $3::varchar = 'ISSUED' THEN now() ELSE issued_at END,
+           responded_at = CASE WHEN $3::varchar IN ('ACCEPTED','DECLINED') THEN now() ELSE responded_at END,
            updated_at = now(), row_version = row_version + 1
          WHERE id = $1 AND organization_id = $2 RETURNING id, code, status, version_number, valid_until`,
         [offerId, actor.organizationId, command.to, actor.actorId]
@@ -161,7 +189,7 @@ export class ApplicationService {
     try {
       await client.query('BEGIN');
       const current = await client.query<OfferRow>(
-        `SELECT o.id, o.application_id, o.status, o.code, a.campus_id, a.program_code, a.intake_code, o.row_version
+        `SELECT o.id, o.application_id, o.status, o.code, a.campus_id, a.program_code, a.intake_code, o.row_version, o.created_by
          FROM offers o JOIN applications a ON a.id = o.application_id
          WHERE o.id = $1 AND o.organization_id = $2 FOR UPDATE OF o`, [offerId, actor.organizationId]
       );
@@ -265,10 +293,10 @@ export class ApplicationService {
       if (command.to === 'READY' && checklist.some((item) => !item.complete)) throw new BadRequestException('All mandatory checklist items must be complete');
       if (command.to === 'RETURNED' && !command.reason?.trim()) throw new BadRequestException('reason is required when returning a handover');
       const updated = await client.query<Record<string, unknown>>(
-        `UPDATE handover_packages SET status = $3, checklist_json = $4::jsonb, exception_reason = $5,
-           submitted_at = CASE WHEN $3 = 'SUBMITTED' THEN now() ELSE submitted_at END,
-           accepted_at = CASE WHEN $3 = 'ACCEPTED' THEN now() ELSE accepted_at END,
-           accepted_by = CASE WHEN $3 = 'ACCEPTED' THEN $6 ELSE accepted_by END,
+        `UPDATE handover_packages SET status = $3::varchar, checklist_json = $4::jsonb, exception_reason = $5,
+           submitted_at = CASE WHEN $3::varchar = 'SUBMITTED' THEN now() ELSE submitted_at END,
+           accepted_at = CASE WHEN $3::varchar = 'ACCEPTED' THEN now() ELSE accepted_at END,
+           accepted_by = CASE WHEN $3::varchar = 'ACCEPTED' THEN $6 ELSE accepted_by END,
            updated_at = now(), row_version = row_version + 1
          WHERE enrollment_id = $1 AND organization_id = $2 RETURNING id, enrollment_id, status, checklist_json, row_version`,
         [enrollmentId, actor.organizationId, command.to, JSON.stringify(checklist), command.reason ?? null, actor.actorId]

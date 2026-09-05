@@ -15,7 +15,7 @@ headers; it must not be enabled in production.
 | GET | `/dashboard/summary` | Operational KPI summary |
 | GET | `/tasks` | Current actor's work queue; optional validated `status` filter |
 | PATCH | `/tasks/{id}` | Change task status with strict body, actor scope and row-version guard |
-| GET | `/audit-events` | Controlled audit search |
+| GET | `/audit-events` | Controlled audit search; optional `objectType` and UUID `objectId` filters |
 
 ## Process and SOP governance
 
@@ -49,6 +49,9 @@ Superseded, and Archived content cannot be edited.
 | GET | `/applications/enrollments/list` | Enrollment readiness list |
 | POST | `/applications/enrollments/{id}/finance-setup` | Create Contract and Fee Plan drafts |
 | POST | `/applications/enrollments/{id}/handover/transitions` | Ready, submit, return, or accept Handover |
+
+Offer draft lưu author actor. Khi chuyển sang `APPROVED`, API chặn chính author tự
+approve và yêu cầu một actor khác thực hiện để giữ segregation of duties.
 
 ### Temporary pre-G1 Lead ingestion contract
 

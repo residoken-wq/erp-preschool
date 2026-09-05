@@ -40,9 +40,14 @@ for (const header of ['x-content-type-options', 'x-frame-options', 'content-secu
 }
 await request('/context');
 await request('/dashboard/summary');
+const outsideCampusSummary = await request('/dashboard/summary', { headers: { 'x-campus-ids': '00000000-0000-7000-8000-000000000102' } });
+if (outsideCampusSummary.leads.total !== 0 || outsideCampusSummary.applications.total !== 0 || outsideCampusSummary.tasks.dueToday !== 0) {
+  throw new Error('Dashboard campus scope invariant failed');
+}
 await request('/processes');
 await request('/sops');
 await request('/applications');
+await expectStatus('/audit-events?objectType=SOPVersion&objectId=not-a-uuid', 400);
 const tasks = await request('/tasks');
 const task = tasks.find((item) => item.status !== 'CANCELLED');
 if (!task) throw new Error('Task smoke requires one non-cancelled synthetic work item');
