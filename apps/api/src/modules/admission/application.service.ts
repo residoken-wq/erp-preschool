@@ -5,6 +5,7 @@ import type { Pool } from 'pg';
 import { randomUUID } from 'node:crypto';
 import { PG_POOL } from '../../platform/database.module.js';
 import { recordMutation } from '../../platform/mutation-log.js';
+import type { Pagination } from '../../platform/pagination.js';
 
 type ApplicationRow = {
   id: string;
@@ -46,7 +47,8 @@ export function assertOfferApprovalSeparation(createdBy: string | null, actorId:
 export class ApplicationService {
   constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
 
-  async list(actor: ActorContext, filter: { status?: ApplicationStatus | undefined; query?: string | undefined }): Promise<PageResult<Record<string, unknown>>> {
+  async list(actor: ActorContext, filter: { status?: ApplicationStatus | undefined; query?: string | undefined; pagination?: Pagination }): Promise<PageResult<Record<string, unknown>>> {
+    const pagination = filter.pagination ?? { page: 1, pageSize: 100, offset: 0 };
     const result = await this.pool.query<Record<string, unknown>>(
       `SELECT a.id, a.code, a.status, a.campus_id, a.program_code, a.intake_code, a.assigned_user_id,
               a.submitted_at, a.created_at, l.code AS lead_code,
@@ -77,11 +79,15 @@ export class ApplicationService {
        WHERE a.organization_id = $1 AND a.campus_id = ANY($2::uuid[])
          AND ($3::text IS NULL OR a.status = $3)
          AND ($4 = '' OR a.code ILIKE '%' || $4 || '%' OR p.first_name || ' ' || p.last_name ILIKE '%' || $4 || '%')
-       ORDER BY a.created_at DESC LIMIT 100`,
-      [actor.organizationId, actor.campusIds, filter.status ?? null, filter.query?.trim() ?? '']
+       ORDER BY a.created_at DESC LIMIT $5 OFFSET $6`,
+      [actor.organizationId, actor.campusIds, filter.status ?? null, filter.query?.trim() ?? '', pagination.pageSize, pagination.offset]
     );
     const total = Number(result.rows[0]?.total_count ?? 0);
-    return { data: result.rows, meta: { page: 1, pageSize: 100, total } };
+    return { data: result.rows.map((row) => {
+      const copy: Record<string, unknown> = { ...row };
+      delete copy.total_count;
+      return copy;
+    }), meta: { page: pagination.page, pageSize: pagination.pageSize, total } };
   }
 
   async transition(actor: ActorContext, id: string, command: { to: ApplicationStatus; reason?: string }): Promise<Record<string, unknown>> {

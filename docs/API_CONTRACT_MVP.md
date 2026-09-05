@@ -41,7 +41,7 @@ Superseded, and Archived content cannot be edited.
 | GET/POST | `/leads` | Search or create Lead with duplicate control |
 | POST | `/leads/{id}/transitions` | Execute a Lead state command |
 | POST | `/leads/{id}/applications` | Convert Qualified Lead into Application |
-| GET | `/applications` | Operational Application queue |
+| GET | `/applications` | Operational Application queue; optional `status`, `q`, `page` (default 1), and `pageSize` (default 20, max 100) |
 | POST | `/applications/{id}/transitions` | Execute Application state command |
 | POST | `/applications/{id}/offers` | Create versioned Offer draft |
 | POST | `/applications/offers/{id}/transitions` | Approve, issue, accept, decline, or expire Offer |
