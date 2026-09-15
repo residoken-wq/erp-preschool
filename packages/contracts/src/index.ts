@@ -66,6 +66,25 @@ export type DashboardSummary = {
   sops: { total: number; draft: number; inReview: number; effective: number };
 };
 
+export const taskStatuses = ['OPEN', 'IN_PROGRESS', 'DONE', 'CANCELLED'] as const;
+export type TaskStatus = (typeof taskStatuses)[number];
+
+export const taskPriorities = ['LOW', 'NORMAL', 'HIGH', 'URGENT'] as const;
+export type TaskPriority = (typeof taskPriorities)[number];
+
+export type TaskItem = {
+  id: string;
+  title: string;
+  description: string | null;
+  priority: TaskPriority;
+  status: TaskStatus;
+  dueAt: string | null;
+  relatedObjectType: string | null;
+  relatedObjectId: string | null;
+  rowVersion: number;
+  overdue: boolean;
+};
+
 export type DomainEvent<TPayload extends object = Record<string, never>> = {
   eventId: string;
   eventType: string;

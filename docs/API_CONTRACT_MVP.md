@@ -13,9 +13,9 @@ headers; it must not be enabled in production.
 | GET | `/health/ready` | Public readiness; returns 200 only when PostgreSQL is reachable, otherwise 503 |
 | GET | `/context` | Current user, roles, scopes, and campuses |
 | GET | `/dashboard/summary` | Operational KPI summary |
-| GET | `/tasks` | Current actor's work queue |
-| PATCH | `/tasks/{id}` | Complete or change a task with row-version guard |
-| GET | `/audit-events` | Controlled audit search |
+| GET | `/tasks` | Current actor's work queue; optional validated `status` filter |
+| PATCH | `/tasks/{id}` | Change task status with strict body, actor scope and row-version guard |
+| GET | `/audit-events` | Controlled audit search; optional `objectType` and UUID `objectId` filters |
 
 ## Process and SOP governance
 
@@ -41,7 +41,7 @@ Superseded, and Archived content cannot be edited.
 | GET/POST | `/leads` | Search or create Lead with duplicate control |
 | POST | `/leads/{id}/transitions` | Execute a Lead state command |
 | POST | `/leads/{id}/applications` | Convert Qualified Lead into Application |
-| GET | `/applications` | Operational Application queue |
+| GET | `/applications` | Operational Application queue; optional `status`, `q`, `page` (default 1), and `pageSize` (default 20, max 100) |
 | POST | `/applications/{id}/transitions` | Execute Application state command |
 | POST | `/applications/{id}/offers` | Create versioned Offer draft |
 | POST | `/applications/offers/{id}/transitions` | Approve, issue, accept, decline, or expire Offer |
@@ -49,6 +49,9 @@ Superseded, and Archived content cannot be edited.
 | GET | `/applications/enrollments/list` | Enrollment readiness list |
 | POST | `/applications/enrollments/{id}/finance-setup` | Create Contract and Fee Plan drafts |
 | POST | `/applications/enrollments/{id}/handover/transitions` | Ready, submit, return, or accept Handover |
+
+Offer draft lưu author actor. Khi chuyển sang `APPROVED`, API chặn chính author tự
+approve và yêu cầu một actor khác thực hiện để giữ segregation of duties.
 
 ### Temporary pre-G1 Lead ingestion contract
 
@@ -71,3 +74,6 @@ gated sau G1, có Privacy/Security approval và negative test cập nhật.
 - Exception/close/reverse actions require a reason.
 - Campus scope is enforced by the API, independent of UI visibility.
 - Event payloads carry identifiers and state changes, not unnecessary HRI.
+- Task status changes write the business update, audit event and outbox event in
+  one transaction; stale `rowVersion` returns HTTP `409` and objects outside the
+  actor's organization/assignment scope return `404`.

@@ -1,13 +1,17 @@
-import { Body, Controller, Get, Inject, Param, Patch, Query } from '@nestjs/common';
-import type { ActorContext, DashboardSummary } from '@sop-os/contracts';
+import { BadRequestException, Body, Controller, Get, Inject, Param, Patch, Query } from '@nestjs/common';
+import type { ActorContext, DashboardSummary, TaskItem } from '@sop-os/contracts';
 import type { Pool } from 'pg';
 import { CurrentActor } from '../../platform/actor-context.js';
 import { PG_POOL } from '../../platform/database.module.js';
 import { RequirePermissions } from '../../platform/permissions.js';
+import { TaskService } from './task.service.js';
 
 @Controller()
 export class OperationsController {
-  constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
+  constructor(
+    @Inject(PG_POOL) private readonly pool: Pool,
+    private readonly taskService: TaskService
+  ) {}
 
   @Get('context')
   @RequirePermissions('identity:read')
@@ -17,7 +21,11 @@ export class OperationsController {
        WHERE id = $1 AND organization_id = $2`, [actor.actorId, actor.organizationId]
     );
     const campuses = await this.pool.query<Record<string, unknown>>(
-      `SELECT id, code, name FROM campuses WHERE organization_id = $1 AND id = ANY($2::uuid[]) AND status = 'ACTIVE' ORDER BY name`,
+      `SELECT c.id, c.code, c.name, coalesce(c.timezone, o.default_timezone) AS timezone
+       FROM campuses c
+       JOIN organizations o ON o.id = c.organization_id
+       WHERE c.organization_id = $1 AND c.id = ANY($2::uuid[]) AND c.status = 'ACTIVE'
+       ORDER BY c.name`,
       [actor.organizationId, actor.campusIds]
     );
     const roles = await this.pool.query<Record<string, unknown>>(
@@ -37,21 +45,21 @@ export class OperationsController {
       tasks_today: string; tasks_overdue: string; sops_total: string; sops_draft: string; sops_review: string; sops_effective: string;
     }>(
       `SELECT
-        (SELECT count(*) FROM leads WHERE organization_id = $1) AS leads_total,
-        (SELECT count(*) FROM leads WHERE organization_id = $1 AND status = 'NEW') AS leads_new,
-        (SELECT count(*) FROM leads WHERE organization_id = $1 AND status = 'QUALIFIED') AS leads_qualified,
-        (SELECT count(*) FROM leads WHERE organization_id = $1 AND status = 'CONVERTED') AS leads_converted,
-        (SELECT count(*) FROM applications WHERE organization_id = $1) AS apps_total,
-        (SELECT count(*) FROM applications WHERE organization_id = $1 AND status IN ('SUBMITTED','DOCUMENT_REVIEW')) AS apps_review,
-        (SELECT count(*) FROM applications WHERE organization_id = $1 AND status = 'INCOMPLETE') AS apps_incomplete,
-        (SELECT count(*) FROM applications WHERE organization_id = $1 AND status = 'OFFERED') AS apps_offered,
-        (SELECT count(*) FROM work_items WHERE organization_id = $1 AND assignee_user_id = $2 AND status IN ('OPEN','IN_PROGRESS') AND due_at::date = CURRENT_DATE) AS tasks_today,
-        (SELECT count(*) FROM work_items WHERE organization_id = $1 AND assignee_user_id = $2 AND status IN ('OPEN','IN_PROGRESS') AND due_at < now()) AS tasks_overdue,
+        (SELECT count(*) FROM leads WHERE organization_id = $1 AND campus_id = ANY($3::uuid[])) AS leads_total,
+        (SELECT count(*) FROM leads WHERE organization_id = $1 AND campus_id = ANY($3::uuid[]) AND status = 'NEW') AS leads_new,
+        (SELECT count(*) FROM leads WHERE organization_id = $1 AND campus_id = ANY($3::uuid[]) AND status = 'QUALIFIED') AS leads_qualified,
+        (SELECT count(*) FROM leads WHERE organization_id = $1 AND campus_id = ANY($3::uuid[]) AND status = 'CONVERTED') AS leads_converted,
+        (SELECT count(*) FROM applications WHERE organization_id = $1 AND campus_id = ANY($3::uuid[])) AS apps_total,
+        (SELECT count(*) FROM applications WHERE organization_id = $1 AND campus_id = ANY($3::uuid[]) AND status IN ('SUBMITTED','DOCUMENT_REVIEW')) AS apps_review,
+        (SELECT count(*) FROM applications WHERE organization_id = $1 AND campus_id = ANY($3::uuid[]) AND status = 'INCOMPLETE') AS apps_incomplete,
+        (SELECT count(*) FROM applications WHERE organization_id = $1 AND campus_id = ANY($3::uuid[]) AND status = 'OFFERED') AS apps_offered,
+        (SELECT count(*) FROM work_items WHERE organization_id = $1 AND assignee_user_id = $2 AND campus_id = ANY($3::uuid[]) AND status IN ('OPEN','IN_PROGRESS') AND due_at::date = CURRENT_DATE) AS tasks_today,
+        (SELECT count(*) FROM work_items WHERE organization_id = $1 AND assignee_user_id = $2 AND campus_id = ANY($3::uuid[]) AND status IN ('OPEN','IN_PROGRESS') AND due_at < now()) AS tasks_overdue,
         (SELECT count(*) FROM sops WHERE organization_id = $1 AND lifecycle_status = 'ACTIVE') AS sops_total,
         (SELECT count(*) FROM sop_versions WHERE organization_id = $1 AND status IN ('DRAFT','REVISION_REQUIRED')) AS sops_draft,
         (SELECT count(*) FROM sop_versions WHERE organization_id = $1 AND status = 'IN_REVIEW') AS sops_review,
         (SELECT count(*) FROM sop_versions WHERE organization_id = $1 AND status = 'EFFECTIVE') AS sops_effective`,
-      [actor.organizationId, actor.actorId]
+      [actor.organizationId, actor.actorId, actor.campusIds]
     );
     const row = result.rows[0]!;
     return {
@@ -64,15 +72,8 @@ export class OperationsController {
 
   @Get('tasks')
   @RequirePermissions('task:read')
-  async tasks(@CurrentActor() actor: ActorContext, @Query('status') status?: string): Promise<Record<string, unknown>[]> {
-    const result = await this.pool.query<Record<string, unknown>>(
-      `SELECT id, title, description, priority, status, due_at, related_object_type, related_object_id, row_version,
-              CASE WHEN due_at < now() AND status IN ('OPEN','IN_PROGRESS') THEN true ELSE false END AS overdue
-       FROM work_items WHERE organization_id = $1 AND assignee_user_id = $2
-         AND ($3::text IS NULL OR status = $3) ORDER BY due_at NULLS LAST LIMIT 100`,
-      [actor.organizationId, actor.actorId, status ?? null]
-    );
-    return result.rows;
+  tasks(@CurrentActor() actor: ActorContext, @Query('status') status?: string): Promise<TaskItem[]> {
+    return this.taskService.list(actor, status);
   }
 
   @Patch('tasks/:id')
@@ -80,27 +81,22 @@ export class OperationsController {
   async updateTask(
     @CurrentActor() actor: ActorContext,
     @Param('id') id: string,
-    @Body() command: { status: 'OPEN' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED'; rowVersion: number }
-  ): Promise<Record<string, unknown>> {
-    const result = await this.pool.query<Record<string, unknown>>(
-      `UPDATE work_items SET status = $4,
-         completed_at = CASE WHEN $4 = 'DONE' THEN now() ELSE NULL END,
-         updated_at = now(), row_version = row_version + 1
-       WHERE id = $1 AND organization_id = $2 AND assignee_user_id = $3 AND row_version = $5
-       RETURNING id, title, status, completed_at, row_version`,
-      [id, actor.organizationId, actor.actorId, command.status, command.rowVersion]
-    );
-    if (!result.rows[0]) throw new Error('Task not found or changed by another user');
-    return result.rows[0];
+    @Body() command: unknown
+  ): Promise<TaskItem> {
+    return this.taskService.update(actor, id, command);
   }
 
   @Get('audit-events')
   @RequirePermissions('audit:read')
-  async audit(@CurrentActor() actor: ActorContext, @Query('objectType') objectType?: string): Promise<Record<string, unknown>[]> {
+  async audit(@CurrentActor() actor: ActorContext, @Query('objectType') objectType?: string, @Query('objectId') objectId?: string): Promise<Record<string, unknown>[]> {
+    if (objectId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(objectId)) {
+      throw new BadRequestException('objectId must be a UUID');
+    }
     const result = await this.pool.query<Record<string, unknown>>(
       `SELECT id, occurred_at, actor_type, actor_id, action, object_type, object_id, reason, correlation_id
        FROM audit_events WHERE organization_id = $1 AND ($2::text IS NULL OR object_type = $2)
-       ORDER BY occurred_at DESC LIMIT 100`, [actor.organizationId, objectType ?? null]
+         AND ($3::uuid IS NULL OR object_id = $3)
+       ORDER BY occurred_at DESC LIMIT 100`, [actor.organizationId, objectType ?? null, objectId ?? null]
     );
     return result.rows;
   }
