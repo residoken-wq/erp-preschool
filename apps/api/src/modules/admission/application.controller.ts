@@ -52,6 +52,16 @@ export class ApplicationController {
     return this.applications.transitionOffer(actor, offerId, command);
   }
 
+  @Post('offers/:offerId/discount-approval')
+  @RequirePermissions('offer:approve-discount')
+  decideOfferDiscountApproval(
+    @CurrentActor() actor: ActorContext,
+    @Param('offerId') offerId: string,
+    @Body() command: unknown
+  ): Promise<{ id: string; status: string; rowVersion: string }> {
+    return this.applications.decideOfferDiscountApproval(actor, offerId, command);
+  }
+
   @Post('offers/:offerId/enrollment')
   @RequirePermissions('enrollment:confirm')
   createEnrollment(

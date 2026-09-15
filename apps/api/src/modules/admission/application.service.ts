@@ -1,10 +1,13 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { ActorContext, ApplicationStatus, PageResult } from '@sop-os/contracts';
 import { applicationStateMachine } from '@sop-os/domain';
 import type { Pool } from 'pg';
 import { randomUUID } from 'node:crypto';
 import { PG_POOL } from '../../platform/database.module.js';
 import { recordMutation } from '../../platform/mutation-log.js';
+import { getActiveRuleConfigValue } from '../../platform/rule-config.js';
+import { createApprovalRequest, getPendingApprovalRequest, decideApprovalRequest } from '../../platform/approval-requests.js';
+import { hasRequiredPermissions } from '../../platform/permissions.js';
 import { MedicalService } from '../medical/medical.service.js';
 import type { Pagination } from '../../platform/pagination.js';
 
@@ -48,6 +51,17 @@ export function assertMedicalCleared(clearance: { cleared: boolean } | null | un
   if (!clearance?.cleared) {
     throw new ConflictException('Medical clearance required before offer can be created');
   }
+}
+
+export type DiscountApprovalCommand = { decision: 'APPROVED' | 'REJECTED'; reason?: string };
+
+export function parseDiscountApprovalCommand(value: unknown): DiscountApprovalCommand {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BadRequestException('Approval body must be an object');
+  const body = value as Record<string, unknown>;
+  if (Object.keys(body).some((key) => !['decision', 'reason'].includes(key))) throw new BadRequestException('Approval body contains unknown fields');
+  if (body.decision !== 'APPROVED' && body.decision !== 'REJECTED') throw new BadRequestException('decision must be APPROVED or REJECTED');
+  if (body.reason !== undefined && (typeof body.reason !== 'string' || body.reason.length > 4000)) throw new BadRequestException('reason must be a string of at most 4000 characters');
+  return { decision: body.decision, ...(body.reason === undefined ? {} : { reason: body.reason }) };
 }
 
 @Injectable()
@@ -137,6 +151,9 @@ export class ApplicationService {
     command: { code: string; validUntil: string; terms: Record<string, unknown> }
   ): Promise<Record<string, unknown>> {
     if (!command.code || !command.validUntil) throw new BadRequestException('code and validUntil are required');
+    if (command.terms !== undefined && (!command.terms || typeof command.terms !== 'object' || Array.isArray(command.terms))) throw new BadRequestException('terms must be an object');
+    const discountPercent = command.terms?.discountPercent ?? 0;
+    if (command.terms?.discountPercent === null || typeof discountPercent !== 'number' || !Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent > 100) throw new BadRequestException('discountPercent must be a number from 0 to 100');
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
@@ -148,18 +165,26 @@ export class ApplicationService {
       if (!application || !actor.campusIds.includes(application.campus_id)) throw new NotFoundException('Application not found');
       if (application.status !== 'DECISION_PENDING') throw new ConflictException('Offer requires application in DECISION_PENDING');
       assertMedicalCleared(await this.medical.getClearance(actor, applicationId));
+      let thresholdPercent: unknown = null;
+      if (discountPercent > 0) {
+        thresholdPercent = await getActiveRuleConfigValue(client, { organizationId: actor.organizationId, campusId: application.campus_id, configKey: 'admission.discount_threshold_percent' });
+        if (typeof thresholdPercent !== 'number' || !Number.isFinite(thresholdPercent) || thresholdPercent < 0 || thresholdPercent > 100) throw new ConflictException('A valid discount threshold configuration is required');
+      }
+      const requiresApproval = typeof thresholdPercent === 'number' && discountPercent > thresholdPercent;
       const id = randomUUID();
       const result = await client.query<Record<string, unknown>>(
         `INSERT INTO offers(id, organization_id, application_id, code, terms_json, valid_until, created_by)
          VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7) RETURNING id, code, status, version_number, valid_until, created_by`,
         [id, actor.organizationId, applicationId, command.code, JSON.stringify(command.terms ?? {}), command.validUntil, actor.actorId]
       );
+      // Step 03 deliberately implements one approval level; multi-level routing is P1-E06.
+      const approval = requiresApproval ? await createApprovalRequest(client, actor, { entityType: 'Offer', entityId: id, thresholdSnapshot: { discountPercent, thresholdPercent } }) : null;
       await recordMutation(client, actor, {
         action: 'offer.create', objectType: 'Offer', objectId: id, after: result.rows[0],
         eventType: 'OfferDrafted', payload: { offerId: id, applicationId }
       });
       await client.query('COMMIT');
-      return result.rows[0]!;
+      return { ...result.rows[0], ...(approval ? { requiresApproval: true, approvalRequestId: approval.id } : {}) };
     } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
   }
 
@@ -176,6 +201,13 @@ export class ApplicationService {
       if (!offer || !actor.campusIds.includes(offer.campus_id)) throw new NotFoundException('Offer not found');
       if (!(offerTransitions[offer.status] ?? []).includes(command.to)) throw new ConflictException(`Transition ${offer.status} -> ${command.to} is not allowed`);
       assertOfferApprovalSeparation(offer.created_by, actor.actorId, command.to);
+      if (command.to === 'APPROVED') {
+        const blocked = await client.query<{ id: string }>(
+          `SELECT id FROM approval_requests WHERE organization_id = $1 AND entity_type = 'Offer'
+           AND entity_id = $2 AND status IN ('PENDING', 'REJECTED') LIMIT 1`, [actor.organizationId, offerId]
+        );
+        if (blocked.rows[0]) throw new ConflictException('Offer discount requires approval before it can be approved');
+      }
       if (['DRAFT', 'DECLINED', 'WITHDRAWN'].includes(command.to) && !command.reason?.trim()) throw new BadRequestException('reason is required');
       const result = await client.query<Record<string, unknown>>(
         `UPDATE offers SET status = $3::varchar,
@@ -194,6 +226,27 @@ export class ApplicationService {
       });
       await client.query('COMMIT');
       return result.rows[0]!;
+    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+  }
+
+  async decideOfferDiscountApproval(actor: ActorContext, offerId: string, body: unknown): Promise<{ id: string; status: string; rowVersion: string }> {
+    if (!hasRequiredPermissions(actor.permissions, ['offer:approve-discount'])) throw new ForbiddenException('Discount approval permission required');
+    const command = parseDiscountApprovalCommand(body);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(offerId)) throw new BadRequestException('offerId must be a UUID');
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const offer = await client.query<{ id: string }>(
+        `SELECT o.id FROM offers o JOIN applications a ON a.id = o.application_id AND a.organization_id = o.organization_id
+         WHERE o.id = $1 AND o.organization_id = $2 AND a.campus_id = ANY($3::uuid[]) FOR UPDATE OF o`,
+        [offerId, actor.organizationId, actor.campusIds]
+      );
+      if (!offer.rows[0]) throw new NotFoundException('Offer not found');
+      const pending = await getPendingApprovalRequest(client, 'Offer', offerId, actor.organizationId);
+      if (!pending) throw new ConflictException('No pending discount approval request');
+      const result = await decideApprovalRequest(client, actor, pending.id, command.decision, command.reason);
+      await client.query('COMMIT');
+      return result;
     } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
   }
 

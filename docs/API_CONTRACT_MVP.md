@@ -47,6 +47,7 @@ Superseded, and Archived content cannot be edited.
 | GET | `/medical/clearances/{applicationId}` | Read scoped medical clearance (HRI); requires `medical:read` |
 | PUT | `/medical/clearances/{applicationId}` | Set scoped medical clearance; requires `medical:edit`; atomic audit/outbox |
 | POST | `/applications/offers/{id}/transitions` | Approve, issue, accept, decline, or expire Offer |
+| POST | `/applications/offers/{offerId}/discount-approval` | Decide discount request; requires `offer:approve-discount`; SoD enforced |
 | POST | `/applications/offers/{id}/enrollment` | Confirm Enrollment from Accepted Offer |
 | GET | `/applications/enrollments/list` | Enrollment readiness list |
 | POST | `/applications/enrollments/{id}/finance-setup` | Create Contract and Fee Plan drafts |
@@ -54,6 +55,57 @@ Superseded, and Archived content cannot be edited.
 
 Offer draft lưu author actor. Khi chuyển sang `APPROVED`, API chặn chính author tự
 approve và yêu cầu một actor khác thực hiện để giữ segregation of duties.
+
+### Offer discount approval (Step 03)
+
+SOP-ADM-003 / BR-ADM-003 → configured discount threshold and prior approval →
+step-03 AC1–AC9 → `rule-config.test.ts`, `approval-requests.test.ts` and
+`application.service.test.ts`. Business owner: Admission and the authorized discount
+approver (permission `offer:approve-discount`). This is deliberately one approval
+level; the SOP's three-level routing remains in P1-E06.
+
+- Create Offer accepts `terms.discountPercent?: number`, finite and in [0, 100].
+  Invalid types/ranges return 400. Omitted/zero discounts preserve the existing
+  response and do not read configuration or create an approval request.
+- Positive discounts require `admission.discount_threshold_percent` with a JSON
+  number in [0, 100]. Missing or malformed configuration returns 409 without Offer
+  or approval writes. No business default is supplied. Read only `valid_to IS NULL`,
+  preferring the application's authorized campus, then the organization-wide row,
+  as required by step-03 (no additional valid_from scheduling in this step).
+- At or below threshold: normal DRAFT. Above threshold: DRAFT plus exactly one
+  PENDING request and response fields `requiresApproval: true, approvalRequestId`.
+  The request retains `{ discountPercent, thresholdPercent }` as decision evidence.
+  Subsequent configuration changes do not rewrite this snapshot.
+- POST `/applications/offers/{offerId}/discount-approval` body:
+  `{ decision: 'APPROVED' | 'REJECTED'; reason?: string }`.
+  Invalid UUID/body, unknown fields and non-string or oversized reason (>4000
+  characters, a transport limit) return 400. Reason is optional for both decisions;
+  it is retained only in the approval record, not copied to audit/outbox.
+- Response: `{ id, status, rowVersion }` for the approval request; rowVersion is a
+  bigint string. Missing permission returns 403 at the API and service. Missing or
+  foreign organization/campus Offer returns 404. Requester self-decision, no pending
+  request and repeated/competing decisions return 409. A discount approver does not
+  need `application:transition`, `offer:transition` or `application:read` here.
+- Discount approval does not transition the Offer. Its normal transition path and
+  author/approver separation remain in force. PENDING or REJECTED discount requests
+  block APPROVED (409); rejection is terminal and no resubmit is implemented.
+- The service locks the scoped Offer before deciding, serializing decisions with
+  Offer transitions. Platform lookup explicitly takes organizationId in addition
+  to entityType/entityId: this extends the task's helper signature to enforce
+  AGENTS.md §5 tenant scope. Campus authorization remains with the entity owner.
+- Offer creation, approval creation (`approval.request` / `ApprovalRequested`) and
+  Offer audit/outbox commit together. Decision update and `approval.decide` /
+  `ApprovalDecided` also commit together. Audit stores state/version/IDs; outbox
+  stores IDs and decision, without terms, discount values or free-text reason.
+  HRI Offer terms and CON financial approval evidence remain scoped server-side;
+  no new read/export/delete endpoint or retention policy is introduced.
+- No migration or seed changes. Recovery rolls back the service change while
+  retaining approval evidence; doing so removes the gate. Client idempotency keys
+  and expected-row-version are not added: a decided request cannot be decided
+  again, while repeated Offer creation retains the existing creation contract.
+- Integration tests use real PostgreSQL, `test-db.ts`/`withRollback`, isolated
+  schemas for service commits, negative scope/SoD tests, competing decisions and
+  injected outbox failure to verify transaction rollback.
 
 ### Medical clearance (Step 02)
 
