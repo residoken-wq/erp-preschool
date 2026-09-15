@@ -127,12 +127,31 @@ nhưng không thay thế trách nhiệm không nhập dữ liệu người thậ
 
 ## Trạng thái Step 11
 
-MVP Sprint 1–7 đã có vertical slice từ SOP Registry/Studio/Approval đến Lead,
-Application, Offer, Enrollment, Finance Setup và Handover. Dashboard, work queue,
-audit/outbox, dữ liệu demo và CI smoke test đã được tích hợp.
+MVP Sprint 1–7 có vertical slice code thật (không phải mock) từ SOP
+Registry/Studio/Approval đến Lead, Application, Offer, Enrollment, Finance
+Setup và Handover, cộng thêm outbox delivery runtime, task board và demo
+journey UI. Dashboard, work queue, audit/outbox và dữ liệu demo synthetic đã
+được tích hợp và chạy được qua `pnpm local:demo:ready`.
 
-Xem `docs/SPRINT_1_7_REPORT.md` và `docs/API_CONTRACT_MVP.md`. Các lựa chọn IdP,
-hosting, object-storage production, RPO/RTO và RLS vẫn cần ADR approval trước pilot.
+Giới hạn hiện tại cần biết trước khi dùng làm baseline cho việc khác:
+
+- Golden path Offer → Enrollment → Finance → Handover chỉ được kiểm bằng
+  script rehearsal thủ công (`pnpm demo:journey:smoke`), **chưa** nằm trong
+  `.github/workflows/ci.yml` — CI hiện chỉ chạy `pnpm smoke` và
+  `pnpm outbox:smoke` (health, lead, permission, duplicate, invalid
+  transition).
+- `application_documents` và `assessments` là bảng đã migrate nhưng chưa có
+  service/controller nào đọc/ghi; các state liên quan trong
+  `packages/domain/src/application-state-machine.ts` là label, chưa có
+  workflow.
+- Không có OIDC, tenant RLS, approval/rule-config engine hay secure upload
+  adapter — xem `docs/CODEX_EXECUTION_PLAN.md` và
+  `docs/backlog/PHASE_1_2_BACKLOG.md` mục cảnh báo sequencing.
+
+Xem `docs/SPRINT_1_7_REPORT.md`, `docs/API_CONTRACT_MVP.md` và
+`docs/CODEX_EXECUTION_PLAN.md` (trạng thái code hiện tại + backlog kế tiếp).
+Các lựa chọn IdP, hosting, object-storage production, RPO/RTO và RLS vẫn cần
+ADR approval trước pilot.
 
 ## Step 12 — Release readiness
 
@@ -140,7 +159,9 @@ Security hardening, UAT catalog, pilot rollout và sign-off template nằm tại
 
 - `docs/SOP_012_UAT_SECURITY_PILOT_RELEASE.md`
 - `docs/UAT_SIGNOFF_TEMPLATE.md`
-- `docs/STEP_12_RELEASE_READINESS_REPORT.md`
+- `docs/STEP_12_RELEASE_READINESS_REPORT.md` (đã cập nhật 15/09/2026 để tách
+  rõ gap môi trường/vendor khỏi gap implementation còn thiếu)
 
 Release chỉ được xem là production-ready sau khi các gate staging, OIDC,
-security scan, restore test và business sign-off đã đạt.
+security scan, restore test và business sign-off đã đạt. Gate G0
+(`docs/governance/PHASE_0_GATE_G0.md`) hiện vẫn `NOT READY FOR PASS`.

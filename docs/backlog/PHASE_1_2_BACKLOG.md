@@ -59,6 +59,33 @@ risk acceptance đúng thẩm quyền trước G1/G2; không chỉ đóng ticket
 | P2-E09 Enrollment/Handover | blocker check, confirm, contract/fee draft, handover/rework | no confirmation when blocker; finance mutation remains draft; full audit/outbox | SOP-ADM-004 | S12 |
 | P2-E10 Pilot readiness | UAT, training, support, recovery/rollback, KPI baseline | P0 UAT pass; no Sev-1/2; named support and Go/No-Go signatures | DEC-001/002 | S12 |
 
+## Cảnh báo sequencing — cập nhật 15/09/2026
+
+Đánh giá code hiện tại (`docs/CODEX_EXECUTION_PLAN.md`) cho thấy phần lớn
+P2-E05 đến P2-E09 (Lead, Application, Offer, Enrollment, Finance setup,
+Handover) đã có code chạy được — bao gồm state transition, audit/outbox,
+author/approver separation — trước khi bất kỳ epic Phase 1 nào (P1-E01 OIDC,
+P1-E02 authorization ngoài permission cơ bản, P1-E03 tenant/RLS, P1-E06/E07
+approval/rule engine, P1-E09 secure docs) được xây. Đây là vi phạm nguyên tắc
+tổ chức delivery #3 trong `docs/IMPLEMENTATION_ROADMAP.md` ("Platform security
+đi trước HRI và tài chính").
+
+Hệ quả và ràng buộc bắt buộc cho đến khi P1 epic liên quan hoàn tất:
+
+- Code Admission hiện tại chỉ được chạy với `AUTH_MODE=development` và dữ liệu
+  synthetic (guard DEC-020); không bật cho staging/production hoặc dữ liệu
+  thật.
+- `application_documents` và `assessments` là bảng chưa có code đọc/ghi; các
+  state `DOCUMENT_REVIEW`/`INCOMPLETE`/`ASSESSMENT_PENDING`/`ASSESSED` trong
+  `packages/domain/src/application-state-machine.ts` chỉ là label chuyển
+  trạng thái, chưa có business logic — không coi P2-E06/P2-E07 là hoàn thành.
+- Không mở rộng thêm phạm vi nghiệp vụ Admission (SOP-ADM-005/006/007 trở đi)
+  cho đến khi P1-E01/E02/E03 hoặc risk acceptance đúng thẩm quyền được ghi
+  nhận.
+- Việc hardening/test hoá code Admission hiện có (thêm test, tách state
+  machine dùng chung, wire CI) vẫn được phép và khuyến khích ngay — xem
+  `docs/CODEX_EXECUTION_PLAN.md`.
+
 ## Definition of Done bổ sung
 
 Ngoài `AGENTS.md`, mỗi epic phải cập nhật contract, migration, seed synthetic,

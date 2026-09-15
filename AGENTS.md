@@ -15,6 +15,15 @@ Mọi thay đổi phải ưu tiên, theo thứ tự:
 4. Khả năng truy vết từ SOP đến rule, requirement, test và release.
 5. Khả năng mở rộng đa cơ sở và bảo trì dài hạn.
 
+## 1.1 Trạng thái hiện tại và việc cần làm tiếp theo
+
+`docs/CODEX_EXECUTION_PLAN.md` là nguồn duy nhất mô tả trạng thái code đã
+verify (không suy từ văn bản) và danh sách task kế tiếp cho coding agent.
+Đọc file đó trước khi chọn việc. Không dùng
+`docs/STEP_12_RELEASE_READINESS_REPORT.md` hay bất kỳ tuyên bố "hoàn tất"/
+"12/12" nào làm bằng chứng sẵn sàng production — Gate G0
+(`docs/governance/PHASE_0_GATE_G0.md`) hiện vẫn `NOT READY FOR PASS`.
+
 ## 2. Hiện trạng repository
 
 - Application root là source canonical kể từ Phase 0 ngày 30/08/2026.
