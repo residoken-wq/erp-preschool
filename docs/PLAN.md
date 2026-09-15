@@ -21,6 +21,23 @@ hay Codex).
   `tasks/step-XX-revise.md` với lỗi cụ thể, không viết lại toàn bộ spec.
 - Không đổi vai trò giữa chừng: nếu một việc cần Claude code trực tiếp (ví dụ sửa gấp
   một bug chặn), ghi rõ đó là ngoại lệ ngoài vòng lặp Step, không đánh số step.
+- **Báo cáo usage sau mỗi step (yêu cầu 15/09/2026, để tránh hết quota giữa chừng):**
+  sau khi audit một step xong (PASS hoặc FAIL), Claude báo lại:
+  - **Claude:** số `total_tokens` còn lại của phiên hiện tại (lấy từ system-reminder gần
+    nhất) — đây là ngân sách context của MỘT phiên hội thoại, không phải hạn mức tài
+    khoản/subscription tổng thể; Claude không có cách xem hạn mức tài khoản rộng hơn.
+  - **Codex CLI:** không có lệnh CLI nào cho biết số lượt/usage còn lại trước khi dùng
+    hết (đã xác nhận 15/09/2026: bản `0.154.0` không có subcommand `usage`, `codex doctor`
+    không hiện thông tin này). Cách duy nhất Claude biết được là **khi đã chạm giới hạn**
+    — lệnh `codex exec` trả lỗi `"You've hit your usage limit... try again at HH:MM"`.
+    Khi gặp lỗi này, Claude dừng ngay, báo giờ reset, không thử lại liên tục. Muốn xem số
+    liệu chính xác hơn (số credit/lượt còn lại), phải xem thủ công tại
+    `chatgpt.com/codex/settings/usage` trên trình duyệt — Claude không truy cập được
+    trang này thay người dùng.
+  - Nếu Codex đang bị giới hạn, Claude **không** viết `tasks/step-XX.md` kế tiếp cho đến
+    khi người dùng xác nhận đã qua giờ reset hoặc muốn chuyển sang API key riêng (khác
+    pool billing với gói ChatGPT, cần người dùng quyết định trước khi đổi
+    `~/.codex/config.toml`/auth).
 
 ## 1. Tài liệu nền (đọc trước khi viết step-XX.md)
 
@@ -46,7 +63,7 @@ Nguồn: `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-SOP-ADM-003-admission-contract-enro
 | 02 | Medical clearance service/controller/permission + dọn numbering collision `MIGRATION_PLAN.md` | **DONE (PASS)** | `tasks/step-02.md` | `reports/step-02-audit.md` |
 | 03 | Discount threshold + approval logic trong `application.service.ts` (dùng `rule_configs`/`approval_requests`) | **DONE (PASS)** | `tasks/step-03.md` | `reports/step-03-audit.md` |
 | 04 | Offer holding-seat auto-expiry worker | **DONE (PASS)** | `tasks/step-04.md` | `reports/step-04-audit.md` |
-| 05 | UI: panel xác nhận y tế + panel duyệt discount. **Cần quyết định trước khi làm:** contract idempotency/expected-`rowVersion` cho `PUT /medical/clearances` (phát sinh từ step 02, xem `reports/step-02-audit.md` mục 5-6) | **IN PROGRESS** | `tasks/step-05.md` | — |
+| 05 | UI: panel xác nhận y tế + panel duyệt discount. Quyết định idempotency đã chốt trong `tasks/step-05.md` §0 (không thêm optimistic concurrency, UI refetch sau mỗi hành động) | **BLOCKED — Codex hết usage, reset ~19:03 15/09/2026** | `tasks/step-05.md` | — |
 | 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | TODO (chờ step 05 PASS) | — | — |
 
 **Domain 01 core logic (BR-ADM-002/003/004) hoàn tất qua Step 01-04.** Còn UI (05) và
@@ -72,3 +89,7 @@ step nào:
   một file migration nháp do một Claude subagent tạo trước đó (chưa commit, chưa audit)
   để giữ audit trail sạch — nội dung SQL của nó được tái sử dụng làm spec chính xác
   trong `tasks/step-01.md`.
+- 15/09/2026 ~15:48: thử `codex exec` cho Step 05, nhận lỗi "You've hit your usage
+  limit... try again at 7:03 PM" ngay cả với một prompt test rỗng ("Say OK"). Step 05
+  chuyển `BLOCKED`. Thêm mục "Báo cáo usage sau mỗi step" vào giao thức §0 theo yêu cầu
+  Repository Owner.
