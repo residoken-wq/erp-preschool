@@ -5,6 +5,7 @@ import type { Pool } from 'pg';
 import { randomUUID } from 'node:crypto';
 import { PG_POOL } from '../../platform/database.module.js';
 import { recordMutation } from '../../platform/mutation-log.js';
+import { MedicalService } from '../medical/medical.service.js';
 import type { Pagination } from '../../platform/pagination.js';
 
 type ApplicationRow = {
@@ -43,9 +44,15 @@ export function assertOfferApprovalSeparation(createdBy: string | null, actorId:
   }
 }
 
+export function assertMedicalCleared(clearance: { cleared: boolean } | null | undefined): void {
+  if (!clearance?.cleared) {
+    throw new ConflictException('Medical clearance required before offer can be created');
+  }
+}
+
 @Injectable()
 export class ApplicationService {
-  constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
+  constructor(@Inject(PG_POOL) private readonly pool: Pool, private readonly medical: MedicalService) {}
 
   async list(actor: ActorContext, filter: { status?: ApplicationStatus | undefined; query?: string | undefined; pagination?: Pagination }): Promise<PageResult<Record<string, unknown>>> {
     const pagination = filter.pagination ?? { page: 1, pageSize: 100, offset: 0 };
@@ -140,6 +147,7 @@ export class ApplicationService {
       const application = current.rows[0];
       if (!application || !actor.campusIds.includes(application.campus_id)) throw new NotFoundException('Application not found');
       if (application.status !== 'DECISION_PENDING') throw new ConflictException('Offer requires application in DECISION_PENDING');
+      assertMedicalCleared(await this.medical.getClearance(actor, applicationId));
       const id = randomUUID();
       const result = await client.query<Record<string, unknown>>(
         `INSERT INTO offers(id, organization_id, application_id, code, terms_json, valid_until, created_by)

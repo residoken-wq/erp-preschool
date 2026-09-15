@@ -133,5 +133,5 @@
 
 ---
 ## Đề xuất phát sinh (Codex điền nếu có, KHÔNG tự code)
-- Ý tưởng/refactor phát sinh ngoài scope: ...
-- Vấn đề gặp phải cần Planning Manager quyết định: ...
+- Ý tưởng/refactor phát sinh ngoài scope: cập nhật `scripts/demo-journey-smoke.mjs` ở Step 06 để gọi PUT medical clearance bằng actor y tế trước POST Offer. Script hiện tạo Offer ngay sau `DECISION_PENDING`, nên gate mới sẽ trả 409. Không sửa script/seed trong Step 02.
+- Vấn đề gặp phải cần Planning Manager quyết định: contract PUT hiện chưa có idempotency key/expected rowVersion; mỗi lần PUT thành công đều tăng version và ghi một audit/outbox. Cần quyết định contract retry/concurrency cho UI ở step sau; Step 02 chỉ serialize cập nhật bằng application row lock.

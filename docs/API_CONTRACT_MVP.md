@@ -43,7 +43,9 @@ Superseded, and Archived content cannot be edited.
 | POST | `/leads/{id}/applications` | Convert Qualified Lead into Application |
 | GET | `/applications` | Operational Application queue; optional `status`, `q`, `page` (default 1), and `pageSize` (default 20, max 100) |
 | POST | `/applications/{id}/transitions` | Execute Application state command |
-| POST | `/applications/{id}/offers` | Create versioned Offer draft |
+| POST | `/applications/{id}/offers` | Create versioned Offer draft; 409 unless medical clearance is true |
+| GET | `/medical/clearances/{applicationId}` | Read scoped medical clearance (HRI); requires `medical:read` |
+| PUT | `/medical/clearances/{applicationId}` | Set scoped medical clearance; requires `medical:edit`; atomic audit/outbox |
 | POST | `/applications/offers/{id}/transitions` | Approve, issue, accept, decline, or expire Offer |
 | POST | `/applications/offers/{id}/enrollment` | Confirm Enrollment from Accepted Offer |
 | GET | `/applications/enrollments/list` | Enrollment readiness list |
@@ -52,6 +54,47 @@ Superseded, and Archived content cannot be edited.
 
 Offer draft lưu author actor. Khi chuyển sang `APPROVED`, API chặn chính author tự
 approve và yêu cầu một actor khác thực hiện để giữ segregation of duties.
+
+### Medical clearance (Step 02)
+
+SOP-ADM-003 / BR-ADM-002 → clearance precondition before Offer creation →
+step-02 AC1–AC5 → `medical.service.test.ts` and `application.service.test.ts`.
+Business owner: Cán bộ Y tế for clearance; Admission consumes the precondition.
+This implements the earlier Offer gate requested by step-02; the SOP also names
+Enrollment and parental consent, which remain outside this step.
+
+- PUT body: `{ cleared: boolean; allergyFlags?: string[]; specialHealthNeeds?: string }`.
+  Unknown fields (including organization/campus/actor IDs) and invalid types return
+  400. Application ID must be a UUID. Transport bounds: at most 100 allergy flags,
+  each non-empty and at most 200 characters; special needs at most 4000 characters.
+  These are input size limits, not medical policy.
+- Optional fields omitted on update retain their existing values; `[]` / `""`
+  explicitly clear their content. Initial omissions store `[]` / null.
+- GET/PUT response: `{ id, applicationId, cleared, allergyFlags, specialHealthNeeds,
+  clearedBy, clearedAt, rowVersion }`; timestamps serialize as ISO strings,
+  rowVersion is a bigint string. GET returns null when an in-scope application has
+  no clearance. Both return 404 for missing or out-of-org/campus applications.
+- `clearedBy` and `clearedAt` record the actor/time when true; false resets them
+  to null. The endpoint permission represents the authorized medical role.
+- Each successful PUT writes one clearance (upsert), one `medical.clearance.set`
+  audit (`MedicalClearance`) and one `MedicalClearanceSet` outbox event. Audit stores
+  only before/after row versions; outbox carries IDs. Neither copies health details.
+  No retention/deletion policy is invented; this endpoint never deletes evidence.
+- Medical writes lock the application row, serializing with createOffer's existing
+  lock. The Offer guard reads through MedicalService using its pool as specified;
+  Admission does not expose health details or require `medical:read` for its check.
+- PUT does not add a client idempotency key or expected-row-version contract in
+  this step: repeated successful requests each produce audit/outbox evidence.
+- No migration change. Recovery is a service rollback; retain the existing 0008
+  table and evidence. Rolling back the Offer gate also removes this protection.
+
+Integration tests require `DATABASE_URL` and migrations through 0008. They use
+isolated disposable PostgreSQL schemas, real service transactions and separate
+pool reads; the existing migration SQL is applied in each disposable schema,
+including foreign keys, constraints and audit triggers.
+The minimal `withRollback` helper rolls back its callback on the same client;
+service COMMIT tests instead drop their dedicated schemas in finally blocks.
+CI quality already migrates and seeds its Postgres service before `pnpm test`.
 
 ### Temporary pre-G1 Lead ingestion contract
 

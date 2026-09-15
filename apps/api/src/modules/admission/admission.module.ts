@@ -4,5 +4,7 @@ import { LeadService } from './lead.service.js';
 import { ApplicationController } from './application.controller.js';
 import { ApplicationService } from './application.service.js';
 
-@Module({ controllers: [LeadController, ApplicationController], providers: [LeadService, ApplicationService] })
+import { MedicalModule } from '../medical/medical.module.js';
+
+@Module({ imports: [MedicalModule], controllers: [LeadController, ApplicationController], providers: [LeadService, ApplicationService] })
 export class AdmissionModule {}
