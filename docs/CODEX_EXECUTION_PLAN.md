@@ -219,6 +219,31 @@ type-check nội bộ khi build).
 **Acceptance criteria:** GitHub Actions run trên PR merge branch xanh với `pretest`
 hook, không cần thay đổi thêm.
 
+### T6 — `apps/worker` chưa dùng `@sop-os/config` (phát sinh từ Domain 01 / Step 04)
+
+**Vì sao:** khi làm `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-*.md` Step 04 (offer holding-seat
+auto-expiry, `reports/step-04-audit.md`), Codex tự phát hiện `apps/worker/package.json`
+không có `@sop-os/config` trong dependencies — cả biến cũ `OUTBOX_POLL_INTERVAL_MS` lẫn
+biến mới `OFFER_EXPIRY_POLL_INTERVAL_MS` đều tự parse bằng `Number(process.env...)` thủ
+công trong `apps/worker/src/main.ts`, không qua Zod schema validation của
+`packages/config` như `apps/api` đã làm (`loadEnvironment`). Vi phạm AGENTS.md §14 "mọi
+biến môi trường phải qua package config có schema validation". Đây là nợ có từ trước
+Domain 01 (không phải do Step 04 gây ra), Codex đúng khi không tự ý mở rộng scope Step 04
+để sửa.
+
+**Việc cần làm:** thêm `@sop-os/config` vào `apps/worker/package.json` dependencies, cập
+nhật `pnpm-lock.yaml` (`pnpm install`, không sửa lockfile thủ công), sửa
+`apps/worker/src/main.ts` dùng `loadEnvironment` thay vì parse `process.env` rải rác cho
+cả `OUTBOX_POLL_INTERVAL_MS` và `OFFER_EXPIRY_POLL_INTERVAL_MS`. Kiểm tra
+`packages/config` đã có production startup guard tương tự `apps/api` chưa; nếu worker cần
+guard khác (ví dụ không cần `APP_ORIGIN`), làm rõ trong schema thay vì bắt worker chấp
+nhận field không liên quan.
+
+**Acceptance criteria:** `apps/worker` không còn `Number(process.env...)` rải rác cho 2
+biến trên; test hiện có (`packages/config/src/index.test.ts`,
+`apps/worker` build/typecheck) vẫn xanh; hành vi validate (min/max, error message) giữ
+nguyên như đã test ở Step 04.
+
 ## 3. Sau khi T1–T5 xong
 
 Quay lại `docs/backlog/PHASE_1_2_BACKLOG.md` mục "Cảnh báo sequencing" (thêm 15/09/2026)

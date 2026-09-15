@@ -45,11 +45,14 @@ Nguồn: `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-SOP-ADM-003-admission-contract-enro
 | 01 | Migration `0008`: `medical_clearances`, `rule_configs`, `approval_requests` | **DONE (PASS)** | `tasks/step-01.md` | `reports/step-01-audit.md` |
 | 02 | Medical clearance service/controller/permission + dọn numbering collision `MIGRATION_PLAN.md` | **DONE (PASS)** | `tasks/step-02.md` | `reports/step-02-audit.md` |
 | 03 | Discount threshold + approval logic trong `application.service.ts` (dùng `rule_configs`/`approval_requests`) | **DONE (PASS)** | `tasks/step-03.md` | `reports/step-03-audit.md` |
-| 04 | Offer holding-seat auto-expiry worker | **IN PROGRESS** | `tasks/step-04.md` | — |
-| 05 | UI: panel xác nhận y tế + panel duyệt discount. **Cần quyết định trước khi làm:** contract idempotency/expected-`rowVersion` cho `PUT /medical/clearances` (phát sinh từ step 02, xem `reports/step-02-audit.md` mục 5-6) | TODO (chờ step 04 PASS) | — | — |
-| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | TODO | — | — |
+| 04 | Offer holding-seat auto-expiry worker | **DONE (PASS)** | `tasks/step-04.md` | `reports/step-04-audit.md` |
+| 05 | UI: panel xác nhận y tế + panel duyệt discount. **Cần quyết định trước khi làm:** contract idempotency/expected-`rowVersion` cho `PUT /medical/clearances` (phát sinh từ step 02, xem `reports/step-02-audit.md` mục 5-6) | **IN PROGRESS** | `tasks/step-05.md` | — |
+| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | TODO (chờ step 05 PASS) | — | — |
 
-Không viết `tasks/step-05.md` cho đến khi `reports/step-04-audit.md` = PASS.
+**Domain 01 core logic (BR-ADM-002/003/004) hoàn tất qua Step 01-04.** Còn UI (05) và
+seed/test hoàn thiện (06) trước khi coi Domain 01 xong toàn bộ.
+
+Không viết `tasks/step-06.md` cho đến khi `reports/step-05-audit.md` = PASS.
 
 ## 3. Hàng đợi domain kế tiếp (sau khi Domain 01 xong)
 
