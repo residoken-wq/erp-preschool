@@ -56,6 +56,24 @@ Superseded, and Archived content cannot be edited.
 Offer draft lưu author actor. Khi chuyển sang `APPROVED`, API chặn chính author tự
 approve và yêu cầu một actor khác thực hiện để giữ segregation of duties.
 
+### Offer holding-seat expiry (Step 04)
+
+SOP-ADM-003 / BR-ADM-004 → expire elapsed holding-seat deadlines → step-04
+AC1–AC7 → `apps/worker/src/offer-expiry-runtime.test.ts` and config tests.
+Business owner: Admission. Worker automatically transitions `ISSUED` offers with
+`valid_until < now()` to `EXPIRED`, updates `updated_at`, and increments
+`row_version` once. Future/null deadlines and all other statuses stay unchanged.
+No HTTP request or user approval is involved: each expiry records SYSTEM audit
+(`actor_id = NULL`, `offer.transition`) and `OfferExpired` outbox in the same
+transaction. Metadata contains only identifiers/status/version, never offer terms
+or child/contact data. Failed writes roll back the entire tick; the next poll retries.
+`OFFER_EXPIRY_POLL_INTERVAL_MS` controls scheduling (default 2000 ms, minimum 250 ms);
+the creator's persisted deadline controls the holding period, with no default days.
+The job runs across organizations/campuses and preserves each offer's organization
+on its events. Deployment assumes one worker instance; no advisory lock or real
+multi-instance verification is included. No schema migration is needed; stopping
+the worker stops future expiry, without undoing already committed transitions.
+
 ### Offer discount approval (Step 03)
 
 SOP-ADM-003 / BR-ADM-003 → configured discount threshold and prior approval →

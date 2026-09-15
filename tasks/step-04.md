@@ -140,5 +140,10 @@
 
 ---
 ## Đề xuất phát sinh (Codex điền nếu có, KHÔNG tự code)
-- Ý tưởng/refactor phát sinh ngoài scope: ...
-- Vấn đề gặp phải cần Planning Manager quyết định: ...
+- Ý tưởng/refactor phát sinh ngoài scope: dùng chung loader env từ
+  `@sop-os/config` cho worker thay cho validation tại entrypoint hiện có.
+- Vấn đề gặp phải cần Planning Manager quyết định: worker chưa khai báo dependency
+  `@sop-os/config`; thêm dependency cần sửa `apps/worker/package.json` và cập nhật
+  `pnpm-lock.yaml` bằng pnpm, ngoài mục 3. Step này giữ khuôn entrypoint hiện có,
+  đồng thời thêm schema Zod và test trong config; chưa thực hiện refactor dependency.
+  Đây là gap với AGENTS.md §14 (env qua package config), cần mở rộng scope riêng.
