@@ -42,14 +42,14 @@ Nguồn: `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-SOP-ADM-003-admission-contract-enro
 
 | Step | Nội dung | Trạng thái | Task file | Audit file |
 |---|---|---|---|---|
-| 01 | Migration `0008`: `medical_clearances`, `rule_configs`, `approval_requests` | **IN PROGRESS** | `tasks/step-01.md` | — |
-| 02 | Medical clearance service/controller/permission | TODO (chờ step 01 PASS) | — | — |
-| 03 | Discount threshold + approval logic trong `application.service.ts` | TODO | — | — |
+| 01 | Migration `0008`: `medical_clearances`, `rule_configs`, `approval_requests` | **DONE (PASS)** | `tasks/step-01.md` | `reports/step-01-audit.md` |
+| 02 | Medical clearance service/controller/permission + dọn numbering collision `MIGRATION_PLAN.md` | **IN PROGRESS** | `tasks/step-02.md` | — |
+| 03 | Discount threshold + approval logic trong `application.service.ts` | TODO (chờ step 02 PASS) | — | — |
 | 04 | Offer holding-seat auto-expiry worker | TODO | — | — |
 | 05 | UI: panel xác nhận y tế + panel duyệt discount | TODO | — | — |
 | 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ | TODO | — | — |
 
-Không viết `tasks/step-02.md` cho đến khi `reports/step-01-audit.md` = PASS.
+Không viết `tasks/step-03.md` cho đến khi `reports/step-02-audit.md` = PASS.
 
 ## 3. Hàng đợi domain kế tiếp (sau khi Domain 01 xong)
 

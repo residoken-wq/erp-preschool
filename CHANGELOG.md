@@ -7,3 +7,4 @@ audit theo step.
 Format: `[YYYY-MM-DD] Step XX - <tên step> - PASS/FAIL - <1 dòng tóm tắt>`
 
 <!-- Thêm dòng mới bên dưới, mới nhất trên cùng -->
+[2026-09-15] Step 01 - Migration medical_clearances/rule_configs/approval_requests - PASS - 3 bảng đúng schema, migrate idempotent từ DB trống, mọi gate xanh; phát hiện nhỏ numbering collision trong MIGRATION_PLAN.md chuyển sang Step 02.
