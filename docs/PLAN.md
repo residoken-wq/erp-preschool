@@ -43,13 +43,13 @@ Nguồn: `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-SOP-ADM-003-admission-contract-enro
 | Step | Nội dung | Trạng thái | Task file | Audit file |
 |---|---|---|---|---|
 | 01 | Migration `0008`: `medical_clearances`, `rule_configs`, `approval_requests` | **DONE (PASS)** | `tasks/step-01.md` | `reports/step-01-audit.md` |
-| 02 | Medical clearance service/controller/permission + dọn numbering collision `MIGRATION_PLAN.md` | **IN PROGRESS** | `tasks/step-02.md` | — |
-| 03 | Discount threshold + approval logic trong `application.service.ts` | TODO (chờ step 02 PASS) | — | — |
-| 04 | Offer holding-seat auto-expiry worker | TODO | — | — |
-| 05 | UI: panel xác nhận y tế + panel duyệt discount | TODO | — | — |
-| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ | TODO | — | — |
+| 02 | Medical clearance service/controller/permission + dọn numbering collision `MIGRATION_PLAN.md` | **DONE (PASS)** | `tasks/step-02.md` | `reports/step-02-audit.md` |
+| 03 | Discount threshold + approval logic trong `application.service.ts` (dùng `rule_configs`/`approval_requests`) | **IN PROGRESS** | `tasks/step-03.md` | — |
+| 04 | Offer holding-seat auto-expiry worker | TODO (chờ step 03 PASS) | — | — |
+| 05 | UI: panel xác nhận y tế + panel duyệt discount. **Cần quyết định trước khi làm:** contract idempotency/expected-`rowVersion` cho `PUT /medical/clearances` (phát sinh từ step 02, xem `reports/step-02-audit.md` mục 5-6) | TODO | — | — |
+| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02, script hiện sẽ nhận 409) | TODO | — | — |
 
-Không viết `tasks/step-03.md` cho đến khi `reports/step-02-audit.md` = PASS.
+Không viết `tasks/step-04.md` cho đến khi `reports/step-03-audit.md` = PASS.
 
 ## 3. Hàng đợi domain kế tiếp (sau khi Domain 01 xong)
 
