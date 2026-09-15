@@ -85,6 +85,12 @@ Hệ quả và ràng buộc bắt buộc cho đến khi P1 epic liên quan hoàn
 - Việc hardening/test hoá code Admission hiện có (thêm test, tách state
   machine dùng chung, wire CI) vẫn được phép và khuyến khích ngay — xem
   `docs/CODEX_EXECUTION_PLAN.md`.
+- **Ngoại lệ có ghi nhận (15/09/2026):** Repository Owner đã yêu cầu và xác nhận một
+  **Demo Track** riêng (`docs/CODEX_FULL_DEMO_PLAN.md`) được phép mở rộng phạm vi
+  nghiệp vụ ra toàn bộ 28 canonical SOP cho mục đích trình diễn sản phẩm, với các nới
+  lỏng liệt kê rõ trong file đó (mock provider, không OIDC/RLS thật, approval/rule-config
+  đơn giản hóa). Ngoại lệ này KHÔNG làm thay đổi Gate G0, KHÔNG cho phép dữ liệu thật,
+  và code Demo Track phải gắn nhãn DEMO/MOCK để không bị hiểu nhầm là production-ready.
 
 ## Definition of Done bổ sung
 

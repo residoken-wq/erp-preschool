@@ -10,6 +10,20 @@ Tài liệu này KHÔNG thay thế `AGENTS.md` (quy tắc bắt buộc, luôn á
 Đây là lớp "hiện trạng + việc kế tiếp" nằm giữa hai tài liệu đó, dùng cho coding agent
 (Codex/Claude Code) chọn task mà không phải đọc lại toàn bộ 20+ file governance.
 
+**Hai track song song kể từ 15/09/2026:**
+
+- **Track A (tài liệu này):** hardening code Admission/SOP OS hiện có — đúng phạm vi đã
+  merge, không mở rộng nghiệp vụ. Áp dụng gate production đầy đủ theo AGENTS.md.
+- **Track B — `docs/CODEX_FULL_DEMO_PLAN.md`:** mở rộng toàn bộ 28 canonical SOP / 75
+  domain thành một bản demo đầy đủ UI/UX, theo yêu cầu Repository Owner, trên một
+  **Demo Track** có nới lỏng rõ ràng (mock provider, không OIDC/RLS thật) và không đổi
+  Gate G0 hay định hướng production. Đọc kỹ mục 0-1 của file đó trước khi bắt đầu Wave
+  nào — ranh giới nới lỏng/không nới lỏng được ghi rõ ở đó.
+
+Khuyến nghị hoàn thành T2-T3 dưới đây trước khi mở Wave 1 của Track B, vì Track B tái sử
+dụng đúng pattern (`recordMutation`, `StateMachine`, `row_version`) cho ~20 domain khác —
+sửa nền tảng trước sẽ rẻ hơn nhân bản lỗi ra nhiều domain.
+
 ## 0. Việc không phải của Codex — cần người có thẩm quyền
 
 - **Push `merge/task-workflow-ui-into-main` lên `origin` và mở PR.** Phiên review

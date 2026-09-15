@@ -17,9 +17,11 @@ Mọi thay đổi phải ưu tiên, theo thứ tự:
 
 ## 1.1 Trạng thái hiện tại và việc cần làm tiếp theo
 
-`docs/CODEX_EXECUTION_PLAN.md` là nguồn duy nhất mô tả trạng thái code đã
-verify (không suy từ văn bản) và danh sách task kế tiếp cho coding agent.
-Đọc file đó trước khi chọn việc. Không dùng
+`docs/CODEX_EXECUTION_PLAN.md` (hardening code hiện có, Track A) và
+`docs/CODEX_FULL_DEMO_PLAN.md` (mở rộng toàn bộ 28 canonical SOP thành bản demo, Track
+B, có nới lỏng ghi rõ ràng cho mục đích trình diễn) là nguồn mô tả trạng thái code đã
+verify và task kế tiếp cho coding agent. Đọc cả hai trước khi chọn việc; Track B không
+thay thế gate production ở đây. Không dùng
 `docs/STEP_12_RELEASE_READINESS_REPORT.md` hay bất kỳ tuyên bố "hoàn tất"/
 "12/12" nào làm bằng chứng sẵn sàng production — Gate G0
 (`docs/governance/PHASE_0_GATE_G0.md`) hiện vẫn `NOT READY FOR PASS`.
