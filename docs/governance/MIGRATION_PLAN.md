@@ -13,6 +13,7 @@ ADR/decision và data classification review.
 |---|---|---|---|
 | `0006_outbox_delivery_attempts.sql` | attempt, provider outcome và receipt metadata | composite org/event FK; unique attempt; success/failure result constraint | additive; forward-fix; giữ evidence khi worker rollback |
 | `0007_offer_author_separation.sql` | author actor của Offer | author không tự approve; actor ID nằm trong audit boundary | additive; nullable cho legacy row; forward-fix |
+| `0008_admission_medical_discount_holding.sql` | medical clearance HRI, scoped rule configuration và approval requests (SOP-ADM-003, BR-ADM-002/003; Step 01) | unique application; HRI CHECK; unique open-ended config theo scope/key; CHECK chặn tự duyệt | additive; forward-fix; giữ evidence khi rollback service |
 | `0008_platform_scope_hardening.sql` | org/campus scope, composite tenant constraints, row version/idempotency base | ngăn cross-org FK; test empty + upgrade DB | forward-fix; backup trước DDL rủi ro |
 | `0009_governance_traceability.sql` | BR/FR/AC/Test/TraceLink và approval primitives | version/link history không bị overwrite | additive trước, backfill có reconciliation |
 | `0010_rule_configuration.sql` | scoped/versioned/effective rule + approval/audit | unique effective version theo scope/time strategy | disable version; không delete evidence |
