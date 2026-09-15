@@ -19,9 +19,10 @@ Mọi thay đổi phải ưu tiên, theo thứ tự:
 
 `docs/CODEX_EXECUTION_PLAN.md` (hardening code hiện có, Track A) và
 `docs/CODEX_FULL_DEMO_PLAN.md` (mở rộng toàn bộ 28 canonical SOP thành bản demo, Track
-B, có nới lỏng ghi rõ ràng cho mục đích trình diễn) là nguồn mô tả trạng thái code đã
-verify và task kế tiếp cho coding agent. Đọc cả hai trước khi chọn việc; Track B không
-thay thế gate production ở đây. Không dùng
+B, có nới lỏng ghi rõ ràng cho mục đích trình diễn) mô tả trạng thái code đã verify và
+định hướng dài hạn. **`docs/PLAN.md` là nguồn sự thật về step đang active ngay bây giờ**
+— coding agent (Codex) chỉ được code đúng phạm vi trong `tasks/step-XX.md` mà
+`docs/PLAN.md` đang trỏ tới, không tự chọn việc từ hai file Track A/B ở trên. Không dùng
 `docs/STEP_12_RELEASE_READINESS_REPORT.md` hay bất kỳ tuyên bố "hoàn tất"/
 "12/12" nào làm bằng chứng sẵn sàng production — Gate G0
 (`docs/governance/PHASE_0_GATE_G0.md`) hiện vẫn `NOT READY FOR PASS`.
