@@ -38,6 +38,28 @@ hay Codex).
     khi người dùng xác nhận đã qua giờ reset hoặc muốn chuyển sang API key riêng (khác
     pool billing với gói ChatGPT, cần người dùng quyết định trước khi đổi
     `~/.codex/config.toml`/auth).
+- **Giới hạn phạm vi tự-verify của Codex trong mỗi task (chốt 15/09/2026, sau khi điều
+  tra nguyên nhân hết quota ở Step 01-04— xem mục 4):** tài khoản Codex CLI hiện là
+  **ChatGPT Plus** (`chatgpt_plan_type: "plus"`, không phải Pro), dùng cửa sổ usage
+  chính **5 giờ rolling** (`primary`, `window_minutes: 300`) — cửa sổ tuần (`secondary`,
+  10080 phút) hầu như còn nguyên. Step 01-04 đã ăn từ 0% lên 99% cửa sổ 5 giờ trong hơn
+  1 tiếng, phần lớn vì mỗi task yêu cầu Codex **tự dựng Docker Postgres + tự khởi động
+  cả API và worker thật + chạy `pnpm smoke`/`pnpm outbox:smoke`** trước khi commit —
+  đúng nhưng **trùng lặp** với việc Claude luôn tự làm lại y hệt ở bước audit (không tốn
+  quota Codex vì đó là Claude tự chạy bash, không qua `codex exec`).
+  - **Từ Step 05 trở đi, `tasks/step-XX.md` mục "Định nghĩa Done" KHÔNG được yêu cầu
+    Codex tự khởi động `apps/api`/`apps/worker` thật hay chạy `pnpm smoke` /
+    `pnpm outbox:smoke` / `pnpm demo:journey:smoke`.** Việc dựng full stack + smoke thật
+    là trách nhiệm của Claude ở bước audit — Claude vẫn phải làm đầy đủ việc này (không
+    được bỏ qua để "tiết kiệm", vì Claude không tốn quota Codex khi tự chạy).
+  - Codex **vẫn phải** tự chạy: `pnpm data:guard`, `pnpm lint`, `pnpm typecheck`,
+    `pnpm test` (kể cả test tích hợp mới cần Postgres thật do chính step đó tạo ra —
+    đây là bằng chứng bắt buộc cho deliverable, không phải verification thừa), `pnpm build`,
+    `docker compose config --quiet`. Chỉ bỏ phần "dựng server thật + smoke script" khỏi
+    yêu cầu của Codex, không bỏ test tự động.
+  - Nếu một step có lý do chính đáng cần Codex tự smoke-test thật (ví dụ thay đổi ảnh
+    hưởng trực tiếp tới cách server khởi động, như Step 04 thêm poll loop), Claude ghi rõ
+    lý do trong task file thay vì áp dụng mặc định.
 
 ## 1. Tài liệu nền (đọc trước khi viết step-XX.md)
 
@@ -93,3 +115,16 @@ step nào:
   limit... try again at 7:03 PM" ngay cả với một prompt test rỗng ("Say OK"). Step 05
   chuyển `BLOCKED`. Thêm mục "Báo cáo usage sau mỗi step" vào giao thức §0 theo yêu cầu
   Repository Owner.
+- 15/09/2026 ~16:00: điều tra nguyên nhân hết quota theo yêu cầu Repository Owner. Đọc
+  `~/.codex/auth.json` (giải mã JWT cục bộ, không lộ token/định danh) và log
+  `rate_limits` trong `~/.codex/sessions/2026/09/15/*.jsonl` của chính 4 lần `codex exec`
+  đã chạy. Kết quả: tài khoản là `chatgpt_plan_type: "plus"` (không phải Pro như kỳ vọng
+  — cần Repository Owner tự xác nhận lại tại `chatgpt.com/settings` bằng đúng tài khoản
+  đang login ở CLI này). Cửa sổ `primary` (5 giờ, `window_minutes: 300`) đi từ 0% (đầu
+  Step 01, ~14:03) lên 99% (cuối Step 04, ~15:28), `resets_at` khớp chính xác 19:03:44 —
+  đúng giờ trong thông báo lỗi. Cửa sổ `secondary` (7 ngày) mới ở 25%, còn nhiều — không
+  phải hết quota tuần, chỉ hết đúng cửa sổ 5 giờ. Nguyên nhân ăn nhanh: mỗi task yêu cầu
+  Codex tự dựng Docker Postgres + tự chạy API/worker thật + `pnpm smoke`/`outbox:smoke`
+  trước khi commit, trùng lặp với việc Claude luôn tự làm lại y hệt ở bước audit. Đã thêm
+  rule giới hạn phạm vi tự-verify của Codex vào giao thức §0 để giảm tiêu thụ quota từ
+  Step 05 trở đi.
