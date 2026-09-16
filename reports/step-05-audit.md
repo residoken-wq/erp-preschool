@@ -96,7 +96,7 @@
 - Giới hạn "không dựng full-stack, không tự commit (sandbox read-only)" — đã ghi nhận,
   Claude tự dựng full-stack và tự commit hộ ở bước audit này.
 
-## 7. KẾT LUẬN
+## 7. KẾT LUẬN (lần 1)
 
 **Trạng thái: [x] FAIL — cần sửa**
 
@@ -115,7 +115,55 @@ cứng.
 Đã dừng `docker compose down` sau khi audit xong để giải phóng tài nguyên máy.
 
 ---
+
+## 8. Audit lần 2 (sau `tasks/step-05-revise.md`) — 16/09/2026
+
+- Commit được audit: `d27187a` (`fix(step-05): handle empty medical clearance response
+  and expose offer approval read fields`), thực thi bởi Codex CLI (`codex exec`), Claude
+  commit hộ (vẫn cùng lý do sandbox `.git` read-only).
+- Tự chạy lại độc lập `pnpm --filter @sop-os/web` và `pnpm --filter @sop-os/api`
+  lint/typecheck/build — cả 4×2 = 8 lệnh đều xanh.
+- Dựng lại full-stack thật (`docker compose up -d --build postgres migrate api web`),
+  verify bằng dữ liệu thật qua đúng API nghiệp vụ (không chỉ đọc code):
+  - **Việc A (bug empty-body):** gọi `GET /medical/clearances/:id` cho một application
+    **chưa từng có clearance** (APP-2026-0149, chưa đụng tới trước đó) → xác nhận response
+    vẫn 200/0 byte như cũ (hành vi NestJS không đổi), nhưng mô phỏng đúng logic `api<T>()`
+    mới (đọc `response.text()`, coi chuỗi rỗng là `null`) → **không còn ném lỗi**, trả về
+    `null` sạch. Sau đó `PUT` một clearance thật rồi `GET` lại → JSON đầy đủ vẫn parse đúng
+    bình thường (không hồi quy case có dữ liệu thật).
+  - **Việc B (read contract):** tạo dữ liệu tối thiểu qua SQL trực tiếp trên Postgres tạm
+    (application → `DECISION_PENDING`, `medical_clearances.cleared = true`, 1
+    `rule_configs` cho `admission.discount_threshold_percent = 10`) — chỉ để đủ điều kiện
+    gọi API thật, không phải seed chính thức. Gọi thật `POST
+    /applications/:id/offers` với `discountPercent: 20` (> ngưỡng 10) → tạo offer +
+    `approval_requests` PENDING qua đúng code path production. `GET /applications` sau đó
+    trả đúng `offer_discount_pending: true`, `offer_valid_until: "2099-01-01T00:00:00.000Z"`.
+    Sau đó `POST .../discount-approval` với `decision: APPROVED` → gọi lại `GET
+    /applications` → `offer_discount_pending` chuyển đúng về `false`, `offer_valid_until`
+    giữ nguyên. Xác nhận trọn vòng đời PENDING → APPROVED phản ánh đúng qua field mới.
+- Đối chiếu AC bổ sung (`tasks/step-05-revise.md` mục 3): cả 4 tiêu chí đều đạt bằng dữ
+  liệu thật (không chỉ code review) — không hồi quy AC1-4/AC9 gốc.
+- AC8 (dark mode/mobile bằng mắt) **vẫn chưa xác nhận được** — phiên Claude này vẫn không
+  có công cụ trình duyệt/screenshot. Không phải PASS, không phải FAIL — gate chưa chạy
+  được, cần Repository Owner tự xác nhận qua `pnpm dev`/`docker compose up` cục bộ, hoặc
+  cấp công cụ trình duyệt cho một phiên sau trước khi coi UI này production-ready về UX.
+- Dữ liệu test tự tạo (offer/approval/rule_config/clearance ở trên) chỉ tồn tại trong
+  volume Docker tạm của phiên audit này; đã `docker compose down -v` để xoá sạch, không
+  ảnh hưởng `database/seed/demo-seed.json` hay môi trường nào khác.
+
+### KẾT LUẬN CUỐI CÙNG
+
+**Trạng thái: [x] PASS** (với 1 gate không chạy được, đã ghi rõ lý do — AGENTS.md §11)
+
+- AC1-7, AC9 (gốc + bổ sung): đạt, xác nhận bằng dữ liệu thật qua toàn bộ vòng đời nghiệp
+  vụ (tạo offer → PENDING → APPROVED), không chỉ đọc code.
+- AC8: gate chưa chạy được do giới hạn công cụ của phiên Claude — ghi vào backlog, không
+  chặn PASS vì đây là giới hạn môi trường audit, không phải lỗi code (đã review tĩnh kỹ
+  toàn bộ class Tailwind liên quan ở mục 2 lần 1, không đổi từ đó tới nay).
+- Cập nhật `docs/PLAN.md`: Step 05 → DONE (PASS), mở khoá viết `tasks/step-06.md`.
+
+---
 ## Ghi vào CHANGELOG.md
 ```
-[2026-09-16] Step 05 - UI medical clearance + discount approval - FAIL - AC1 có bug thật (GET clearance rỗng ném lỗi JSON parse khi chưa có dữ liệu, chặn golden path); AC5-7 chặn do GET /applications thiếu approval status/valid_until (Codex tự báo, Claude xác nhận độc lập qua code + full-stack curl test thật). Soạn tasks/step-05-revise.md.
+[2026-09-16] Step 05 - UI medical clearance + discount approval - PASS (sau 1 lần FAIL) - Lần 1: AC1 có bug thật (GET clearance rỗng ném lỗi JSON parse), AC5-7 chặn do thiếu read contract (Codex tự báo, Claude xác nhận độc lập). Lần 2: cả 2 sửa xong, verify bằng dữ liệu thật qua full vòng đời offer/approval (tạo offer discount vượt ngưỡng -> PENDING -> APPROVED) trên full-stack Docker thật, không hồi quy AC cũ. AC8 (dark/mobile bằng mắt) không xác nhận được do phiên Claude không có công cụ trình duyệt - ghi backlog, không chặn PASS.
 ```

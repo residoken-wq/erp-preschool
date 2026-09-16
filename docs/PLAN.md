@@ -85,13 +85,13 @@ Nguồn: `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-SOP-ADM-003-admission-contract-enro
 | 02 | Medical clearance service/controller/permission + dọn numbering collision `MIGRATION_PLAN.md` | **DONE (PASS)** | `tasks/step-02.md` | `reports/step-02-audit.md` |
 | 03 | Discount threshold + approval logic trong `application.service.ts` (dùng `rule_configs`/`approval_requests`) | **DONE (PASS)** | `tasks/step-03.md` | `reports/step-03-audit.md` |
 | 04 | Offer holding-seat auto-expiry worker | **DONE (PASS)** | `tasks/step-04.md` | `reports/step-04-audit.md` |
-| 05 | UI: panel xác nhận y tế + panel duyệt discount. Quyết định idempotency đã chốt trong `tasks/step-05.md` §0 (không thêm optimistic concurrency, UI refetch sau mỗi hành động) | **FAIL (lần 1), đang REVISE (16/09/2026)** — xem `tasks/step-05-revise.md` | `tasks/step-05.md` + `tasks/step-05-revise.md` | `reports/step-05-audit.md` |
-| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | TODO (chờ step 05 PASS) | — | — |
+| 05 | UI: panel xác nhận y tế + panel duyệt discount. Quyết định idempotency đã chốt trong `tasks/step-05.md` §0 (không thêm optimistic concurrency, UI refetch sau mỗi hành động) | **DONE (PASS sau 1 lần FAIL/revise)** | `tasks/step-05.md` + `tasks/step-05-revise.md` | `reports/step-05-audit.md` |
+| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | TODO — sẵn sàng viết task | — | — |
 
-**Domain 01 core logic (BR-ADM-002/003/004) hoàn tất qua Step 01-04.** Còn UI (05) và
-seed/test hoàn thiện (06) trước khi coi Domain 01 xong toàn bộ.
+**Domain 01 core logic (BR-ADM-002/003/004) hoàn tất qua Step 01-04. UI (05) đã PASS.**
+Còn seed/test hoàn thiện (06) trước khi coi Domain 01 xong toàn bộ.
 
-Không viết `tasks/step-06.md` cho đến khi `reports/step-05-audit.md` = PASS.
+`reports/step-05-audit.md` = PASS → đã mở khoá viết `tasks/step-06.md`.
 
 ## 3. Hàng đợi domain kế tiếp (sau khi Domain 01 xong)
 
@@ -142,5 +142,15 @@ step nào:
   tự báo) — `GET /applications` thiếu field đọc `approval_requests` PENDING/`valid_until`
   của offer, nên `DiscountApprovalPanel` không hoạt động thật được. `reports/step-05-audit.md`
   = FAIL. Soạn `tasks/step-05-revise.md` (việc A sửa frontend, việc B mở rộng tối thiểu,
-  chỉ đọc, `apps/api` — ngoại lệ có kiểm soát so với scope Step 05 gốc). Không viết
-  `tasks/step-06.md` cho tới khi step 05 PASS.
+  chỉ đọc, `apps/api` — ngoại lệ có kiểm soát so với scope Step 05 gốc).
+- 16/09/2026 (tiếp): Codex sửa xong theo `tasks/step-05-revise.md` (commit `d27187a`,
+  Claude commit hộ). Audit lần 2: tự chạy lại lint/typecheck/build cho cả `apps/web`/
+  `apps/api` (xanh), dựng lại full-stack thật, tự tạo dữ liệu tối thiểu qua SQL (application
+  → `DECISION_PENDING`, clearance `cleared=true`, 1 `rule_configs` ngưỡng discount 10%) rồi
+  gọi thật `POST .../offers` với discount 20% → tạo offer + `approval_requests` PENDING qua
+  đúng code path, xác nhận `GET /applications` trả đúng `offer_discount_pending`/
+  `offer_valid_until`; duyệt (`APPROVED`) rồi gọi lại xác nhận cờ về `false`. Xác nhận bug
+  empty-body (Việc A) đã hết bằng `node fetch` mô phỏng đúng `api<T>()` mới. Không hồi quy
+  AC cũ. AC8 (dark/mobile bằng mắt) vẫn không xác nhận được — phiên Claude không có công cụ
+  trình duyệt/screenshot, ghi backlog, không chặn PASS. `reports/step-05-audit.md` = PASS.
+  Đã `docker compose down -v` dọn dữ liệu test tạm. Step 05 chuyển DONE, mở khoá Step 06.
