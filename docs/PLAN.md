@@ -108,9 +108,12 @@ Nguồn: `tasks/step-07.md` mục 0 (quyết định), `docs/CODEX_EXECUTION_PLA
 
 | Step | Nội dung | Trạng thái | Task file | Audit file |
 |---|---|---|---|---|
-| 07 | Migration `0009`: thêm `row_version`/`updated_at` + index `application_id` cho `application_documents`/`assessments` (nền tảng, không code service) | IN PROGRESS — Codex đang code (16/09/2026) | `tasks/step-07.md` | — |
+| 07 | Migration `0009`: thêm `row_version`/`updated_at` + index `application_id` cho `application_documents`/`assessments` (nền tảng, không code service) | **DONE (PASS)** | `tasks/step-07.md` | `reports/step-07-audit.md` |
 
-Không viết `tasks/step-08.md` cho đến khi `reports/step-07-audit.md` = PASS.
+**TẠM DỪNG theo yêu cầu Repository Owner (16/09/2026):** sau khi Step 07 PASS, dừng triển
+khai tiếp Domain 02 để đánh giá chiến lược sản phẩm (so sánh với LittleLives/SanAnKids —
+xem hội thoại phiên này, không có file riêng). Không viết `tasks/step-08.md` cho đến khi
+có xác nhận tiếp tục từ Repository Owner.
 
 ## 3. Hàng đợi domain kế tiếp (sau khi Domain 02 xong)
 
@@ -210,3 +213,18 @@ sau.
   code service) — thay placeholder cũ "0009_platform_scope_hardening" trong
   `MIGRATION_PLAN.md` (chỉ là kế hoạch nháp chưa từng code, cùng cách `0008` đã thay
   placeholder trước đó). Gọi `codex exec` để code.
+- 16/09/2026 (tiếp): Codex code xong (commit `242c320`), Claude audit bằng Postgres thật —
+  migrate từ DB trống, migrate lần 2 idempotent, seed Step 06 trên schema mới không mất
+  dữ liệu, schema khớp đúng spec (`\d`/`pg_indexes`). `reports/step-07-audit.md` = PASS.
+  **Repository Owner yêu cầu tạm dừng triển khai Domain 02 sau step này** để đánh giá
+  chiến lược sản phẩm — so sánh phạm vi/độ phức tạp của dự án với 2 app quản lý mầm non
+  thương mại (LittleLives, SanAnKids): kết luận chính (đầy đủ trong hội thoại phiên này) —
+  dự án hiện theo đúng roadmap đã duyệt (`docs/IMPLEMENTATION_ROADMAP.md` Phase 2 Admission
+  trước Phase 3 SIS/Y tế/Học phí là chủ đích, không phải chọn bừa), nhưng mức rigor
+  (SoD/audit/HRI/decision governance) trên mỗi tính năng nặng hơn nhiều so với sản phẩm
+  SMB đối chiếu, và các pain-point tần suất cao nhất của trường/phụ huynh (điểm danh, học
+  phí, app phụ huynh — đúng thứ 2 đối thủ dùng để bán hàng) đều nằm ở Phase 3, chưa được
+  chạm tới. Khuyến nghị đã đưa ra: cân nhắc chuyển ưu tiên sang Domain 03 (SIS-001 điểm
+  danh) thay vì đào sâu tiếp Domain 02, nếu mục tiêu là có sản phẩm dùng được sớm — quyết
+  định cuối thuộc Repository Owner. **Không viết `tasks/step-08.md` cho tới khi có xác
+  nhận tiếp tục.**
