@@ -132,7 +132,7 @@ trẻ An toàn và Điểm danh Hàng ngày). Domain **chưa có** file
 | Step | Nội dung | Trạng thái | Task file | Audit file |
 |---|---|---|---|---|
 | 08 | Migration `0010`: `parent_guardians` (HRI, mutable) + `attendance_events` (append-only, trigger chặn UPDATE/DELETE) — nền tảng, không code service | **DONE (PASS)** | `tasks/step-08.md` | `reports/step-08-audit.md` |
-| 09 | Service `attendance` — gate check-in + class check-in (2 POST + 1 GET), idempotent qua `clientEventId`, permission `attendance:record`/`attendance:read` | IN PROGRESS — Codex đang code (16/09/2026) | `tasks/step-09.md` | — |
+| 09 | Service `attendance` — gate check-in + class check-in (2 POST + 1 GET), idempotent qua `clientEventId`, permission `attendance:record`/`attendance:read` | **BLOCKED — Codex hết usage giữa chừng, reset ~18:14 16/09/2026** | `tasks/step-09.md` | — |
 
 Phạm vi Step 09 **chỉ** nửa buổi sáng (gate + class check-in) — pickup/handover
 dual-verification (Bước 04-06 SOP), auto-lock 09:00/red-alert 09:15 (cần worker), và
@@ -284,3 +284,14 @@ Phase 3 trong `docs/IMPLEMENTATION_ROADMAP.md` mục 10.2) trước, domain hàn
   nhận đây là nợ kiến trúc có từ `medical_clearances` (Domain 01), không phải regression
   của step này, ghi backlog hardening riêng thay vì sửa lẻ tẻ. Domain 03 có nền tảng, chờ
   Step 09 (service ghi nhận điểm danh + gate verify).
+- 16/09/2026 (tiếp): gọi `codex exec` cho Step 09. Codex tạo xong
+  `attendance.service.ts`/`attendance.controller.ts`/`attendance.module.ts` + đăng ký vào
+  `app.module.ts` (khớp spec, đã đọc lại xác nhận đúng pattern `medical` module), nhưng
+  **hết usage giữa chừng trước khi viết `attendance.service.test.ts`** — lỗi
+  `"You've hit your usage limit... try again at 6:14 PM"`. Theo giao thức §0: dừng ngay,
+  không thử lại liên tục, không viết task file mới. Thay đổi hiện **chưa commit** (còn
+  trong working tree, an toàn, chưa mất) vì thiếu bằng chứng test bắt buộc theo Acceptance
+  Criteria — không coi là hoàn tất step. Phát hiện thêm 1 điểm nhỏ cần Codex sửa khi tiếp
+  tục: `@HttpCode(200)` tự thêm vào 2 POST, lệch convention hiện có (mọi POST command
+  endpoint khác trong repo — `application.controller.ts` — đều dùng mặc định 201, không
+  decorator nào ép 200). Chờ qua giờ reset hoặc Repository Owner xác nhận hướng khác.
