@@ -75,6 +75,8 @@ export class ApplicationService {
               a.submitted_at, a.created_at, l.code AS lead_code,
               p.first_name, p.last_name,
               latest_offer.id AS offer_id, latest_offer.code AS offer_code, latest_offer.status AS offer_status,
+              latest_offer.valid_until AS offer_valid_until,
+              COALESCE(latest_offer.discount_pending, false) AS offer_discount_pending,
               latest_enrollment.id AS enrollment_id, latest_enrollment.code AS enrollment_code,
               latest_enrollment.status AS enrollment_status, latest_enrollment.handover_status,
               latest_enrollment.contract_status, latest_enrollment.fee_plan_status,
@@ -83,7 +85,14 @@ export class ApplicationService {
        LEFT JOIN leads l ON l.id = a.lead_id
        LEFT JOIN persons p ON p.id = l.primary_contact_person_id
        LEFT JOIN LATERAL (
-         SELECT o.id, o.code, o.status FROM offers o
+         SELECT o.id, o.code, o.status, o.valid_until,
+                EXISTS (
+                  SELECT 1 FROM approval_requests ar
+                  WHERE ar.organization_id = o.organization_id
+                    AND ar.entity_type = 'Offer' AND ar.entity_id = o.id
+                    AND ar.status = 'PENDING'
+                ) AS discount_pending
+         FROM offers o
          WHERE o.application_id = a.id AND o.organization_id = a.organization_id
          ORDER BY o.version_number DESC, o.created_at DESC LIMIT 1
        ) latest_offer ON true
