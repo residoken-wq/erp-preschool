@@ -131,7 +131,13 @@ trẻ An toàn và Điểm danh Hàng ngày). Domain **chưa có** file
 
 | Step | Nội dung | Trạng thái | Task file | Audit file |
 |---|---|---|---|---|
-| 08 | (đang nghiên cứu SOP + schema trước khi viết spec) | ĐANG VIẾT SPEC | — | — |
+| 08 | Migration `0010`: `parent_guardians` (HRI, mutable) + `attendance_events` (append-only, trigger chặn UPDATE/DELETE) — nền tảng, không code service | IN PROGRESS — Codex đang code (16/09/2026) | `tasks/step-08.md` | — |
+
+Tóm tắt quyết định (đầy đủ ở `tasks/step-08.md` mục 0): không tạo bảng `classes` (dùng
+`enrollment_id` làm đại diện trẻ); không có cột ảnh (DEC-006 vẫn OPEN, cùng lý do Domain
+02); `attendance_events` append-only đúng pattern `audit_events`; đã chốt trước 8 tên
+permission và 4 tên `rule_configs` key cho step service sau (Step 09/10), không dùng ở
+step này.
 
 ## 3. Hàng đợi domain kế tiếp
 
