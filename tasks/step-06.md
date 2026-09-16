@@ -53,6 +53,23 @@ cụ thể cho những chỗ SOP/audit chỉ nêu ý định, chưa nêu giá tr
    qua giao diện" đã nêu ở `tasks/step-05.md` mục 1. Chỉ `rule_configs` được seed sẵn (đây
    là config, không phải hành động nghiệp vụ của một actor).
 
+**Cập nhật 16/09/2026 (sau vòng code đầu, sửa lỗi trong chính spec này):** Codex đã đúng
+khi phát hiện `ApplicationService.transition()` — method service thuần cho
+`POST /applications/:id/transitions` — **không tự kiểm tra permission bên trong**; enforcement
+`application:transition` chỉ nằm ở tầng `PermissionGuard`/`@RequirePermissions` gắn trên
+`ApplicationController.transition` (khác với `MedicalService.setClearance`/
+`ApplicationService.decideOfferDiscountApproval`, hai method này CÓ gọi
+`hasRequiredPermissions(...)` ngay trong service vì cần enforce SoD động dựa trên dữ liệu,
+không chỉ permission tĩnh). Gọi thẳng `applications.transition(actor, ...)` ở tầng service
+trong test — như mục 3 bản đầu của spec này yêu cầu — sẽ KHÔNG BAO GIỜ ném
+`ForbiddenException`, vì service không có nhánh đó. Đây là lỗi trong chính spec (giả định
+sai kiến trúc), không phải lỗi Codex. **Sửa: đổi sang test ở đúng tầng Guard/metadata**,
+tái dùng chính xác pattern đã có trong `apps/api/src/modules/medical/medical.service.test.ts`
+mục "registers GET and PUT..." (dùng `Reflect.getMetadata(PERMISSIONS_KEY,
+ApplicationController.prototype.transition)` + `canActivateRequest(...)`) — **không cần
+Postgres**, không cần fixture schema riêng cho case này. Mục 3 dưới đây đã cập nhật theo
+đúng hướng sửa này.
+
 ## 1. Bối cảnh nghiệp vụ (BA)
 
 - **Vì sao cần step này:** Domain 01 (SOP-ADM-003, BR-ADM-002/003/004) đã xong logic
@@ -134,12 +151,9 @@ cụ thể cho những chỗ SOP/audit chỉ nêu ý định, chưa nêu giá tr
   đều `false`; `hasRequiredPermissions(['application:read','offer:approve-discount'],
   ['application:transition'])` và `(..., ['medical:edit'])` đều `false`; và xác nhận các
   quyền ĐÚNG của mỗi persona vẫn `true` cho hành động của họ (không chỉ test phủ định).
-- `apps/api/src/modules/admission/application.service.test.ts` (hoặc 1 file test mới cùng
-  thư mục nếu thấy rõ ràng hơn, ví dụ `application.service.step06-permissions.test.ts`) —
-  thêm đúng 2 case tích hợp Postgres thật, tái dùng fixture có sẵn trong file: actor với
-  permissions **chính xác** bằng persona Cán bộ Y tế gọi `applications.transition(actor,
-  applicationId, {...})` thật → expect `ForbiddenException`/403; actor với permissions
-  chính xác bằng persona Hiệu trưởng gọi tương tự → expect 403. Không sửa test case cũ.
+- `apps/api/src/modules/admission/application.service.test.ts` — thêm đúng 1 test case
+  mới, **KHÔNG cần Postgres** (xem "Cập nhật 16/09/2026" cuối mục 0 để biết lý do). Không
+  sửa test case cũ.
 - `scripts/demo-journey-smoke.mjs` — sửa đúng các chỗ:
   1. Thêm `medicalHeaders`/`principalHeaders` (actor id khớp seed mới, `x-permissions`
      khớp đúng mục 0.2 — script này KHÔNG đọc từ `demoPersonas` của `apps/web`, phải khai
@@ -175,11 +189,19 @@ cụ thể cho những chỗ SOP/audit chỉ nêu ý định, chưa nêu giá tr
 - [ ] Chạy `pnpm db:migrate && pnpm db:seed` **hai lần liên tiếp** trên Postgres trống →
       không lỗi cả hai lần (idempotent) — xác nhận bằng SQL: đúng 1 dòng `rule_configs`
       active cho `admission.discount_threshold_percent` (không nhân đôi ở lần seed thứ 2),
-      2 user mới tồn tại đúng role trong `user_role_scopes`.
+      2 user mới tồn tại đúng role trong `user_role_scopes`. **Nếu sandbox Codex không có
+      quyền Docker/Postgres cục bộ** (đã xảy ra ở vòng code đầu — `Docker socket permission
+      denied`, không có binary Postgres), ghi rõ lý do trong báo cáo và **không** coi đây là
+      lý do dừng cả step — Claude sẽ tự chạy đúng bước này ở audit (tương tự cách Claude tự
+      dựng full-stack cho `demo-journey-smoke.mjs`), miễn Codex đã chứng minh phần seed
+      script/JSON đúng cú pháp và logic qua đọc code + `pnpm data:guard`.
 - [ ] `hasRequiredPermissions` unit test mới (mục 3) đều đúng như mô tả — cả 4 trường hợp
       phủ định lẫn 2+ trường hợp khẳng định.
-- [ ] 2 test tích hợp Postgres thật mới (mục 3) — actor Cán bộ Y tế và Hiệu trưởng gọi
-      `applications.transition(...)` thật đều nhận `ForbiddenException`.
+- [ ] 1 test mới ở tầng Guard/metadata (mục 3, **không cần Postgres**) — xác nhận
+      `Reflect.getMetadata(PERMISSIONS_KEY, ApplicationController.prototype.transition)`
+      vẫn là `['application:transition']`, và `canActivateRequest(...)` trả `false` cho cả
+      permissions của Cán bộ Y tế lẫn Hiệu trưởng khi required là `['application:transition']`
+      — đúng pattern đã có trong `medical.service.test.ts`.
 - [ ] `apps/web`: build/typecheck xanh; 2 persona mới xuất hiện trong `demoPersonas`; 2
       persona cũ không có field `permissions` (giữ nguyên hành vi).
 - [ ] `scripts/demo-journey-smoke.mjs`: cấu trúc đúng như mô tả mục 3 — **Claude sẽ tự
@@ -192,12 +214,14 @@ cụ thể cho những chỗ SOP/audit chỉ nêu ý định, chưa nêu giá tr
 ## 5. Định nghĩa Done
 
 - [ ] `pnpm lint && pnpm typecheck && pnpm build` xanh cho cả `apps/web` và `apps/api`.
-- [ ] `pnpm test` xanh cho `apps/api` (gồm 2 test tích hợp mới — cần `DATABASE_URL`, Codex
-      tự dựng 1 Postgres tạm để chạy, đây là bằng chứng bắt buộc theo `docs/PLAN.md` §0,
-      KHÔNG phải "dựng server thật" bị cấm — chỉ là chạy test suite như các step trước).
+- [ ] `pnpm test` xanh cho `apps/api` (gồm test Guard/metadata mới — không cần
+      `DATABASE_URL`; các test Postgres cũ vẫn skip bình thường nếu không có
+      `DATABASE_URL`, không phải lỗi mới).
 - [ ] `pnpm data:guard` xanh.
-- [ ] Tự chạy `pnpm db:migrate && pnpm db:seed` hai lần trên Postgres tạm để tự xác nhận
-      idempotent (bằng chứng ghi rõ trong báo cáo bàn giao, không chỉ nói "chắc ổn").
+- [ ] **Cố gắng** tự chạy `pnpm db:migrate && pnpm db:seed` hai lần trên Postgres tạm để tự
+      xác nhận idempotent. Nếu sandbox không cho phép (Docker/Postgres không truy cập
+      được), ghi rõ nguyên văn lỗi gặp phải trong báo cáo bàn giao — Claude sẽ tự chạy lại
+      bước này ở audit, đây không phải điều kiện chặn hoàn thành step.
 - [ ] **KHÔNG cần** tự chạy `apps/web`/`apps/api` như server thật, không cần tự chạy
       `pnpm smoke`/`pnpm outbox:smoke`/`demo:journey:smoke` — theo đúng rule đã chốt từ
       Step 05, Claude làm việc này ở audit.
@@ -225,5 +249,15 @@ cụ thể cho những chỗ SOP/audit chỉ nêu ý định, chưa nêu giá tr
 
 ---
 ## Đề xuất phát sinh (Codex điền nếu có, KHÔNG tự code)
-- Ý tưởng/refactor phát sinh ngoài scope: ...
-- Vấn đề gặp phải cần Planning Manager quyết định: ...
+- Ý tưởng/refactor phát sinh ngoài scope: không triển khai thêm.
+- Blocker AC4 (Codex, 16/09/2026): `ApplicationService.transition()` hiện chỉ kiểm tra
+  organization/campus và state machine, không kiểm tra `application:transition` trong
+  service. Hai test mới gọi thật service với transition hợp lệ DRAFT -> SUBMITTED và
+  yêu cầu 403; đọc code cho thấy chưa có nhánh từ chối quyền tương ứng. Cần Planning
+  Manager mở scope sửa service để enforce permission (hoặc ra spec revise); Codex
+  không sửa service vì mục 3 cấm. Chưa có bằng chứng chạy Postgres để xác nhận runtime.
+- Blocker môi trường verification: Docker socket trả `permission denied`; không tìm
+  thấy binary Postgres cục bộ để dựng instance tạm. Chưa chạy được hai test tích hợp mới
+  và hai vòng migrate+seed/SQL kiểm tra idempotency. Không coi các gate này là PASS.
+- Chưa commit: điều kiện người dùng yêu cầu là toàn bộ gate xanh chưa đạt; môi trường
+  cũng khai báo `.git` chỉ đọc. Không thay đổi permission hoặc lách sandbox.
