@@ -32,7 +32,7 @@ const eastCampusId = '00000000-0000-7000-8000-000000000102';
 const demoPersonas: DemoPersona[] = [
   { id: 'manager', label: 'Admission Manager', actorId: '00000000-0000-7000-8000-000000001001', campusIds: [centralCampusId, eastCampusId] },
   { id: 'officer', label: 'Admission Officer', actorId: '00000000-0000-7000-8000-000000001002', campusIds: [centralCampusId] },
-  { id: 'medical', label: 'Cán bộ Y tế', actorId: '00000000-0000-7000-8000-000000001003', campusIds: [centralCampusId], permissions: ['medical:read', 'medical:edit'] },
+  { id: 'medical', label: 'Cán bộ Y tế', actorId: '00000000-0000-7000-8000-000000001003', campusIds: [centralCampusId], permissions: ['medical:read', 'medical:edit', 'application:read'] },
   { id: 'principal', label: 'Hiệu trưởng', actorId: '00000000-0000-7000-8000-000000001004', campusIds: [centralCampusId], permissions: ['application:read', 'offer:approve-discount'] }
 ];
 

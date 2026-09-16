@@ -40,8 +40,9 @@ describe('permission policy', () => {
 // SOP-ADM-003 -> step-06 AC3: restricted demo personas.
 describe('Domain 01 demo persona permissions', () => {
   it('allows medical actions and denies admission transitions and discount approval for Cán bộ Y tế', () => {
-    const permissions = ['medical:read', 'medical:edit'];
+    const permissions = ['medical:read', 'medical:edit', 'application:read'];
     expect(hasRequiredPermissions(permissions, ['medical:read', 'medical:edit'])).toBe(true);
+    expect(hasRequiredPermissions(permissions, ['application:read'])).toBe(true);
     for (const permission of ['application:transition', 'offer:approve-discount', 'offer:create', 'offer:transition']) {
       expect(hasRequiredPermissions(permissions, [permission])).toBe(false);
     }
