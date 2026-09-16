@@ -90,19 +90,37 @@ Nguồn: `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-SOP-ADM-003-admission-contract-enro
 
 **Domain 01 (SOP-ADM-003, BR-ADM-002/003/004) đã HOÀN TẤT — Step 01-06 đều PASS.**
 
-## 2.1 Domain 01 hoàn tất — bước tiếp theo
+## 2.1 Domain 02 — SOP-ADM-001/002 (Track B, đang làm)
 
-Domain 01 xong toàn bộ (logic Step 01-04, UI Step 05, seed/permission âm/demo journey
-Step 06). Bước kế tiếp là chọn domain ở mục 3 dưới đây để bắt đầu — chưa có
-`tasks/step-07.md` nào được viết cho đến khi Repository Owner xác nhận domain kế tiếp
-(mặc định theo thứ tự wave: Domain 02 — SOP-ADM-001/002/004).
+**Sửa nhãn 16/09/2026:** mục 3 (cũ) ghi "Domain 02 — SOP-ADM-001/002/004" — nhãn này
+**sai**. Theo `docs/SOP_OS_MASTER_BUILD_PLAN_CONSOLIDATED.md` (canonical SOP ID, thắng
+theo AGENTS.md §3 mục 3), SOP-ADM-004 (canonical) = Operational Handover, **đã có code
+một phần từ Domain 01** (`handover_packages`, `handover:transition`). Domain 02 chỉ gồm
+**SOP-ADM-001 (Application document verification) + SOP-ADM-002 (Student Assessment)**.
+Chi tiết đầy đủ quyết định (nguồn SOP, gap DB/code, blocker DEC-006 cho upload file thật)
+ở `tasks/step-07.md` mục 0 — Domain 02 **chưa có** file
+`docs/CODEX_DOMAIN_INSTRUCTIONS/D02-*.md` riêng, `tasks/step-07.md` mục 0 tạm thời đóng
+vai trò đó cho tới khi domain này cần phân tích sâu hơn.
 
-## 3. Hàng đợi domain kế tiếp (sau khi Domain 01 xong)
+Nguồn: `tasks/step-07.md` mục 0 (quyết định), `docs/CODEX_EXECUTION_PLAN.md` mục T4 (gap
+đã cảnh báo từ trước), bảng `application_documents`/`assessments` có sẵn từ migration
+`0004` nhưng chưa có service/UI nào.
+
+| Step | Nội dung | Trạng thái | Task file | Audit file |
+|---|---|---|---|---|
+| 07 | Migration `0009`: thêm `row_version`/`updated_at` + index `application_id` cho `application_documents`/`assessments` (nền tảng, không code service) | IN PROGRESS — Codex đang code (16/09/2026) | `tasks/step-07.md` | — |
+
+Không viết `tasks/step-08.md` cho đến khi `reports/step-07-audit.md` = PASS.
+
+## 3. Hàng đợi domain kế tiếp (sau khi Domain 02 xong)
 
 Theo thứ tự wave trong `docs/CODEX_FULL_DEMO_PLAN.md` §3-4 — chỉ liệt kê, chưa viết
-step nào:
+step nào. **Lưu ý:** dòng 1 dưới đây giữ nguyên nhãn gốc của `CODEX_FULL_DEMO_PLAN.md`
+("001/002/004") dù đã xác định ở mục 2.1 trên là nhãn sai/dư — không sửa file
+`CODEX_FULL_DEMO_PLAN.md` (ngoài phạm vi PLAN.md), chỉ ghi chú ở đây để không nhầm lần
+sau.
 
-1. Domain 02 — SOP-ADM-001/002/004 (Application document verification + Assessment)
+1. ~~Domain 02 — SOP-ADM-001/002/004~~ (đang làm, xem mục 2.1 — thực chất chỉ 001+002)
 2. Domain 03 — SOP-SIS-001 (điểm danh/đón trả)
 3. Domain 04 — SOP-SIS-002 (nhật ký chăm sóc)
 4. Domain 05 — SOP-MED-001 (y tế/dị ứng/thuốc — lưu ý dùng lại `medical_clearances`
@@ -179,3 +197,16 @@ step nào:
   `outbox:smoke` không hồi quy (1 lần fail do backlog outbox tự tạo trong lúc audit, không
   phải regression, xác nhận lại pass sau khi backlog xử lý hết). `reports/step-06-audit.md`
   = PASS. **Domain 01 (SOP-ADM-003) hoàn tất toàn bộ, Step 01-06 đều PASS.**
+- 16/09/2026 (Domain 02 bắt đầu): nghiên cứu SOP-ADM-001/002/004 trước khi viết step-07.
+  Phát hiện nhãn "SOP-ADM-001/002/004" ở mục 3 (cũ) sai — 3 hệ đánh số SOP-ADM-00X khác
+  nhau tồn tại trong repo, bộ canonical đã hợp nhất
+  (`docs/SOP_OS_MASTER_BUILD_PLAN_CONSOLIDATED.md`) xác định SOP-ADM-004 = Operational
+  Handover, đã có code một phần từ Domain 01 — không thuộc Domain 02. Domain 02 chỉ gồm
+  SOP-ADM-001 (document) + SOP-ADM-002 (assessment). Xác nhận qua `docs/CODEX_EXECUTION_
+  PLAN.md` mục T4: bảng `application_documents`/`assessments` có sẵn từ migration `0004`,
+  chưa có service/UI nào, và **DEC-006 (object storage/malware scan) vẫn `OPEN`** — chưa
+  được phép implement upload file thật ở bất kỳ step nào của Domain 02 cho tới khi đóng.
+  Viết `tasks/step-07.md` (migration nền tảng: `row_version`/`updated_at`/index, không
+  code service) — thay placeholder cũ "0009_platform_scope_hardening" trong
+  `MIGRATION_PLAN.md` (chỉ là kế hoạch nháp chưa từng code, cùng cách `0008` đã thay
+  placeholder trước đó). Gọi `codex exec` để code.
