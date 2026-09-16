@@ -86,12 +86,16 @@ Nguồn: `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-SOP-ADM-003-admission-contract-enro
 | 03 | Discount threshold + approval logic trong `application.service.ts` (dùng `rule_configs`/`approval_requests`) | **DONE (PASS)** | `tasks/step-03.md` | `reports/step-03-audit.md` |
 | 04 | Offer holding-seat auto-expiry worker | **DONE (PASS)** | `tasks/step-04.md` | `reports/step-04-audit.md` |
 | 05 | UI: panel xác nhận y tế + panel duyệt discount. Quyết định idempotency đã chốt trong `tasks/step-05.md` §0 (không thêm optimistic concurrency, UI refetch sau mỗi hành động) | **DONE (PASS sau 1 lần FAIL/revise)** | `tasks/step-05.md` + `tasks/step-05-revise.md` | `reports/step-05-audit.md` |
-| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | IN PROGRESS — Codex đang code (16/09/2026) | `tasks/step-06.md` | — |
+| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | **DONE (PASS)** | `tasks/step-06.md` | `reports/step-06-audit.md` |
 
-**Domain 01 core logic (BR-ADM-002/003/004) hoàn tất qua Step 01-04. UI (05) đã PASS.**
-Còn seed/test hoàn thiện (06) trước khi coi Domain 01 xong toàn bộ.
+**Domain 01 (SOP-ADM-003, BR-ADM-002/003/004) đã HOÀN TẤT — Step 01-06 đều PASS.**
 
-`reports/step-05-audit.md` = PASS → đã mở khoá viết `tasks/step-06.md`.
+## 2.1 Domain 01 hoàn tất — bước tiếp theo
+
+Domain 01 xong toàn bộ (logic Step 01-04, UI Step 05, seed/permission âm/demo journey
+Step 06). Bước kế tiếp là chọn domain ở mục 3 dưới đây để bắt đầu — chưa có
+`tasks/step-07.md` nào được viết cho đến khi Repository Owner xác nhận domain kế tiếp
+(mặc định theo thứ tự wave: Domain 02 — SOP-ADM-001/002/004).
 
 ## 3. Hàng đợi domain kế tiếp (sau khi Domain 01 xong)
 
@@ -160,3 +164,18 @@ step nào:
   `application:read+offer:approve-discount`) phải tự gửi `x-permissions` hẹp qua FE; 2
   persona cũ giữ nguyên wildcard mặc định để không hồi quy. `admission.discount_threshold_
   percent` seed = 10% (giá trị demo, chưa phải chính sách duyệt). Gọi `codex exec` để code.
+- 16/09/2026 (tiếp, Step 06): gọi Codex 3 lượt. Lượt 1 Codex tự phát hiện lỗi kiến trúc
+  trong chính spec Claude (test permission âm gọi sai tầng — service thay vì Guard/
+  `@RequirePermissions`, vì `ApplicationService.transition()` không tự kiểm tra permission
+  như `MedicalService.setClearance`/`decideOfferDiscountApproval`) — sửa spec sang đúng
+  pattern Guard/metadata đã có trong `medical.service.test.ts`, không phải lỗi Codex. Sau
+  lượt 2 (gate xanh), Claude audit bằng full-stack thật + `curl` API thật phát hiện persona
+  "Cán bộ Y tế" thiếu `application:read` nên không dùng được qua UI (403 khi list
+  Application, chặn đúng mục đích thêm persona) — sửa spec thêm quyền (cùng lý do đã dùng
+  cho Hiệu trưởng), gọi Codex lượt 3. Audit cuối: migrate+seed 2 lần trên cùng Postgres,
+  SQL xác nhận idempotent (không nhân đôi role/user/rule_config); `demo-journey-smoke.mjs`
+  chạy trọn golden path mới (medical clearance → offer discount 15% > ngưỡng 10% →
+  `approval_requests` PENDING → Hiệu trưởng duyệt → APPROVED/ISSUED/ACCEPTED); `smoke`/
+  `outbox:smoke` không hồi quy (1 lần fail do backlog outbox tự tạo trong lúc audit, không
+  phải regression, xác nhận lại pass sau khi backlog xử lý hết). `reports/step-06-audit.md`
+  = PASS. **Domain 01 (SOP-ADM-003) hoàn tất toàn bộ, Step 01-06 đều PASS.**
