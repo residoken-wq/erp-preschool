@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { PATH_METADATA } from '@nestjs/common/constants.js';
-import { PERMISSIONS_KEY } from '../../platform/permissions.js';
+import { canActivateRequest, PERMISSIONS_KEY } from '../../platform/permissions.js';
 import { ApplicationController } from './application.controller.js';
 import { describe, expect, it } from 'vitest';
 import { randomUUID } from 'node:crypto';
@@ -171,5 +171,18 @@ describe.skipIf(!process.env.DATABASE_URL)('discount gate PostgreSQL integration
       await pool.query(`DROP SCHEMA IF EXISTS ${schema} CASCADE`);
       await pool.end();
     }
+  });
+});
+
+// SOP-ADM-003 -> C.4/C.6 -> step-06 AC4: deny application transitions for restricted personas.
+describe('restricted demo persona transition permissions', () => {
+  it('requires application:transition, denies medical and principal personas, and allows the matching permission', () => {
+    const actor: ActorContext = { actorId: randomUUID(), organizationId: randomUUID(), campusIds: [randomUUID()], permissions: [], correlationId: randomUUID() };
+    const handler: unknown = Reflect.get(ApplicationController.prototype, 'transition');
+    if (typeof handler !== 'function') throw new Error('Route handler missing');
+    expect(Reflect.getMetadata(PERMISSIONS_KEY, handler)).toEqual(['application:transition']);
+    expect(canActivateRequest({ ...actor, permissions: ['medical:read', 'medical:edit'] }, ['application:transition'], false, 'oidc')).toBe(false);
+    expect(canActivateRequest({ ...actor, permissions: ['application:read', 'offer:approve-discount'] }, ['application:transition'], false, 'oidc')).toBe(false);
+    expect(canActivateRequest({ ...actor, permissions: ['application:transition'] }, ['application:transition'], false, 'oidc')).toBe(true);
   });
 });

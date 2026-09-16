@@ -70,6 +70,20 @@ async function seedUsers() {
   }
 }
 
+async function seedRuleConfigs() {
+  for (const config of seed.demo_rule_configs ?? []) {
+    const campusId = config.campus === null ? null : seed.campuses.find((campus) => campus.code === config.campus)?.id;
+    if (campusId === undefined) throw new Error('Unknown rule config campus');
+    await client.query(
+      `INSERT INTO rule_configs(organization_id, campus_id, config_key, value_json)
+       VALUES ($1, $2, $3, $4::jsonb)
+       ON CONFLICT (organization_id, COALESCE(campus_id, '00000000-0000-0000-0000-000000000000'::uuid), config_key)
+       WHERE valid_to IS NULL DO NOTHING`,
+      [seed.organization.id, campusId, config.config_key, JSON.stringify(config.value)]
+    );
+  }
+}
+
 async function seedProcesses() {
   const ids = new Map();
   for (const node of seed.process_nodes ?? []) {
@@ -165,6 +179,7 @@ try {
   await seedCampuses();
   await seedRoles();
   await seedUsers();
+  await seedRuleConfigs();
   const processIds = await seedProcesses();
   await seedSops(processIds);
   await seedMvpDemo();

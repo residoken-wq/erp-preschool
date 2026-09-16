@@ -9,6 +9,9 @@ const baseHeaders = {
 const officerHeaders = { ...baseHeaders, 'x-actor-id': '00000000-0000-7000-8000-000000001002' };
 const managerHeaders = { ...baseHeaders, 'x-actor-id': '00000000-0000-7000-8000-000000001001' };
 
+const medicalHeaders = { ...baseHeaders, 'x-actor-id': '00000000-0000-7000-8000-000000001003', 'x-permissions': 'medical:read,medical:edit' };
+const principalHeaders = { ...baseHeaders, 'x-actor-id': '00000000-0000-7000-8000-000000001004', 'x-permissions': 'application:read,offer:approve-discount' };
+
 async function request(path, headers, init = {}) {
   const response = await fetch(`${origin}${path}`, { ...init, headers: { ...headers, ...init.headers } });
   if (!response.ok) throw new Error(`${init.method ?? 'GET'} ${path} returned ${response.status}: ${await response.text()}`);
@@ -43,13 +46,16 @@ for (const status of ['SUBMITTED', 'DOCUMENT_REVIEW', 'VERIFIED', 'ASSESSMENT_PE
   await command(`/applications/${application.id}/transitions`, officerHeaders, { to: status });
 }
 
+await request(`/medical/clearances/${application.id}`, medicalHeaders, { method: 'PUT', body: JSON.stringify({ cleared: true }) });
+
 const offer = await command(`/applications/${application.id}/offers`, officerHeaders, {
   code: 'OFF-DEMO-GOLDEN',
   validUntil: new Date(Date.now() + 7 * 86_400_000).toISOString(),
-  terms: { mode: 'SIMULATED_LOCAL_DEMO' }
+  terms: { mode: 'SIMULATED_LOCAL_DEMO', discountPercent: 15 }
 });
 await command(`/applications/offers/${offer.id}/transitions`, officerHeaders, { to: 'PENDING_APPROVAL' });
 await expectStatus(`/applications/offers/${offer.id}/transitions`, officerHeaders, { to: 'APPROVED' }, 409);
+await command(`/applications/offers/${offer.id}/discount-approval`, principalHeaders, { decision: 'APPROVED' });
 await command(`/applications/offers/${offer.id}/transitions`, managerHeaders, { to: 'APPROVED' });
 await command(`/applications/offers/${offer.id}/transitions`, managerHeaders, { to: 'ISSUED' });
 await command(`/applications/offers/${offer.id}/transitions`, managerHeaders, { to: 'ACCEPTED' });

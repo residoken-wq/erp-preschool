@@ -16,7 +16,7 @@ type UserContext = {
   roles: Array<{ code: string; name: string }>;
   permissions: string[];
 };
-type DemoPersona = { id: string; label: string; actorId: string; campusIds: string[] };
+type DemoPersona = { id: string; label: string; actorId: string; campusIds: string[]; permissions?: string[] };
 type Summary = {
   leads: { total: number; new: number; qualified: number; converted: number };
   applications: { total: number; inReview: number; incomplete: number; offered: number };
@@ -31,7 +31,9 @@ const centralCampusId = '00000000-0000-7000-8000-000000000101';
 const eastCampusId = '00000000-0000-7000-8000-000000000102';
 const demoPersonas: DemoPersona[] = [
   { id: 'manager', label: 'Admission Manager', actorId: '00000000-0000-7000-8000-000000001001', campusIds: [centralCampusId, eastCampusId] },
-  { id: 'officer', label: 'Admission Officer', actorId: '00000000-0000-7000-8000-000000001002', campusIds: [centralCampusId] }
+  { id: 'officer', label: 'Admission Officer', actorId: '00000000-0000-7000-8000-000000001002', campusIds: [centralCampusId] },
+  { id: 'medical', label: 'Cán bộ Y tế', actorId: '00000000-0000-7000-8000-000000001003', campusIds: [centralCampusId], permissions: ['medical:read', 'medical:edit'] },
+  { id: 'principal', label: 'Hiệu trưởng', actorId: '00000000-0000-7000-8000-000000001004', campusIds: [centralCampusId], permissions: ['application:read', 'offer:approve-discount'] }
 ];
 
 const fallbackSummary: Summary = {
@@ -72,7 +74,8 @@ function actorHeaders(persona: DemoPersona, campusIds: string[]): Record<string,
     'content-type': 'application/json',
     'x-actor-id': persona.actorId,
     'x-organization-id': organizationId,
-    'x-campus-ids': campusIds.join(',')
+    'x-campus-ids': campusIds.join(','),
+    ...(persona.permissions ? { 'x-permissions': persona.permissions.join(',') } : {})
   };
 }
 

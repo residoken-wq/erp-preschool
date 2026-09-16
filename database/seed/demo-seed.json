@@ -26,11 +26,18 @@
     {"code": "ACADEMIC_MANAGER", "name": "Academic Manager"},
     {"code": "FINANCE_MANAGER", "name": "Finance Manager"},
     {"code": "AUDITOR", "name": "Auditor"},
-    {"code": "SYSTEM_ADMIN", "name": "System Administrator"}
+    {"code": "SYSTEM_ADMIN", "name": "System Administrator"},
+    {"code": "MEDICAL_OFFICER", "name": "Cán bộ Y tế"},
+    {"code": "PRINCIPAL", "name": "Hiệu trưởng"}
   ],
   "demo_users": [
     {"id": "00000000-0000-7000-8000-000000001001", "email": "admission.manager@example.test", "display_name": "Nguyễn Minh Anh", "roles": ["ADMISSION_MANAGER"], "campuses": ["CENTRAL", "EAST"]},
-    {"id": "00000000-0000-7000-8000-000000001002", "email": "admission.officer@example.test", "display_name": "Trần Thu Hà", "roles": ["ADMISSION_OFFICER"], "campuses": ["CENTRAL"]}
+    {"id": "00000000-0000-7000-8000-000000001002", "email": "admission.officer@example.test", "display_name": "Trần Thu Hà", "roles": ["ADMISSION_OFFICER"], "campuses": ["CENTRAL"]},
+    {"id": "00000000-0000-7000-8000-000000001003", "email": "medical.officer@example.test", "display_name": "Cán bộ Y tế", "roles": ["MEDICAL_OFFICER"], "campuses": ["CENTRAL"]},
+    {"id": "00000000-0000-7000-8000-000000001004", "email": "principal@example.test", "display_name": "Hiệu trưởng", "roles": ["PRINCIPAL"], "campuses": ["CENTRAL"]}
+  ],
+  "demo_rule_configs": [
+    {"config_key": "admission.discount_threshold_percent", "value": 10, "campus": null, "description": "Demo only; not an approved policy or production default."}
   ],
   "process_nodes": [
     {"level": "L0", "code": "L0-03", "name": "Student Acquisition & Enrollment", "parent": null},
