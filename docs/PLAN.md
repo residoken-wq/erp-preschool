@@ -86,7 +86,7 @@ Nguồn: `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-SOP-ADM-003-admission-contract-enro
 | 03 | Discount threshold + approval logic trong `application.service.ts` (dùng `rule_configs`/`approval_requests`) | **DONE (PASS)** | `tasks/step-03.md` | `reports/step-03-audit.md` |
 | 04 | Offer holding-seat auto-expiry worker | **DONE (PASS)** | `tasks/step-04.md` | `reports/step-04-audit.md` |
 | 05 | UI: panel xác nhận y tế + panel duyệt discount. Quyết định idempotency đã chốt trong `tasks/step-05.md` §0 (không thêm optimistic concurrency, UI refetch sau mỗi hành động) | **DONE (PASS sau 1 lần FAIL/revise)** | `tasks/step-05.md` + `tasks/step-05-revise.md` | `reports/step-05-audit.md` |
-| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | TODO — sẵn sàng viết task | — | — |
+| 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | IN PROGRESS — Codex đang code (16/09/2026) | `tasks/step-06.md` | — |
 
 **Domain 01 core logic (BR-ADM-002/003/004) hoàn tất qua Step 01-04. UI (05) đã PASS.**
 Còn seed/test hoàn thiện (06) trước khi coi Domain 01 xong toàn bộ.
@@ -154,3 +154,9 @@ step nào:
   AC cũ. AC8 (dark/mobile bằng mắt) vẫn không xác nhận được — phiên Claude không có công cụ
   trình duyệt/screenshot, ghi backlog, không chặn PASS. `reports/step-05-audit.md` = PASS.
   Đã `docker compose down -v` dọn dữ liệu test tạm. Step 05 chuyển DONE, mở khoá Step 06.
+- 16/09/2026 (tiếp): Viết `tasks/step-06.md`. Quyết định chính (ghi trong task file mục
+  0): cơ chế permission hoàn toàn header-based (không dùng `role_permissions` DB dù có
+  schema) — 2 persona mới ("Cán bộ Y tế" `medical:read+medical:edit`, "Hiệu trưởng"
+  `application:read+offer:approve-discount`) phải tự gửi `x-permissions` hẹp qua FE; 2
+  persona cũ giữ nguyên wildcard mặc định để không hồi quy. `admission.discount_threshold_
+  percent` seed = 10% (giá trị demo, chưa phải chính sách duyệt). Gọi `codex exec` để code.
