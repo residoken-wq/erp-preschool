@@ -4,6 +4,8 @@ import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { TaskBoard, type TaskItem, type TaskStatus } from './task-board';
 import { DemoJourney, type JourneyAction } from './demo-journey';
 import { SopWorkspace } from './sop-workspace';
+import { MedicalClearancePanel, type MedicalClearance, type ClearanceCommand } from './medical-clearance-panel';
+import { DiscountApprovalPanel, type ApprovalOffer, type DiscountDecision } from './discount-approval-panel';
 
 type Tab = 'overview' | 'leads' | 'applications' | 'sops' | 'tasks';
 type Row = Record<string, unknown>;
@@ -309,9 +311,84 @@ export function SopOsApp() {
 
   return <div className={loading ? 'appShell loading' : 'appShell'} data-theme={darkMode ? 'dark' : 'light'}>
     <aside className="sidebar"><div className="brand"><span className="brandMark">S</span><span>SOP OS</span></div><nav className="nav" aria-label="Điều hướng chính">{navigation.map((item) => <button key={item.id} className={tab === item.id ? 'navItem active' : 'navItem'} onClick={() => navigate(item.id)} type="button"><span className="navIcon">{item.icon}</span><span className="navLabel">{item.label}</span></button>)}</nav><div className="sideFoot"><strong>{displayName}</strong><span>{roleName}</span></div></aside>
-    <main className="main"><header className="topbar"><span className="breadcrumb">SOP OS / {navigation.find((item) => item.id === tab)?.label}</span><div className="topActions"><span className="demoBadge">LOCAL DEMO</span><select className="personaSelect" aria-label="Vai trò demo" onChange={(event) => { setPersonaId(event.target.value); setCampusId(demoPersonas.find((item) => item.id === event.target.value)?.campusIds[0] ?? centralCampusId); }} value={personaId}>{demoPersonas.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select><select className="campusSelect" aria-label="Cơ sở" disabled={!context} onChange={(event) => setCampusId(event.target.value)} value={campusId}>{(context?.campuses ?? [{ id: centralCampusId, code: 'CENTRAL', name: 'Cơ sở Trung tâm', timezone: 'Asia/Ho_Chi_Minh' }]).map((campus) => <option key={campus.id} value={campus.id}>{campus.name}</option>)}</select><button aria-label={darkMode ? 'Dùng giao diện sáng' : 'Dùng giao diện tối'} className="themeToggle" onClick={() => setDarkMode((current) => !current)} type="button">{darkMode ? '☀' : '◐'}</button><span className="avatar">{initials || '—'}</span></div></header><div className="content">{demoMode === 'static' && <div className="notice">STATIC PREVIEW — dữ liệu trên màn hình không được đọc từ API.</div>}{demoMode === 'live' && connectionError && <div className="connectionError" role="alert"><strong>LIVE LOCAL DEMO chưa kết nối được API.</strong><span>{connectionError}</span><button className="secondary" onClick={() => { void refresh(); }} type="button">Thử lại</button></div>}{tab === 'overview' ? <Overview summary={summary} tasks={tasks} onCreate={() => setLeadModal(true)} timezone={timezone} /> : tab === 'tasks' ? <TaskBoard connected={connected} error={taskError} onUpdate={updateTask} query={query} setQuery={setQuery} tasks={tasks} updatingTaskId={updatingTaskId} /> : <Records onCreate={() => setLeadModal(true)} onSelect={(id) => { void selectRecord(id); }} query={query} recordStatus={recordStatus} rows={filtered} selectedId={selectedRecordId} setQuery={setQuery} setRecordStatus={setRecordStatus} tab={tab} timezone={timezone} />}{selectedRow && (tab === 'leads' || tab === 'applications') && <DemoJourney busy={journeyBusy} error={journeyError} kind={tab === 'leads' ? 'lead' : 'application'} onAction={(action) => { void runJourneyAction(action, selectedRow); }} onClose={() => setSelectedRecordId(null)} onOpenSop={openRelatedSop} roleName={roleName} row={selectedRow} />}{tab === 'sops' && sopDetail && <SopWorkspace audit={sopAudit} busy={journeyBusy} detail={sopDetail} error={journeyError} onClose={() => { setSelectedRecordId(null); setSopDetail(null); }} onComment={addSopComment} onTransition={(status) => { void runSopTransition(status); }} roleName={roleName} />}</div></main>
+    <main className="main"><header className="topbar"><span className="breadcrumb">SOP OS / {navigation.find((item) => item.id === tab)?.label}</span><div className="topActions"><span className="demoBadge">LOCAL DEMO</span><select className="personaSelect" aria-label="Vai trò demo" onChange={(event) => { setSelectedRecordId(null); setPersonaId(event.target.value); setCampusId(demoPersonas.find((item) => item.id === event.target.value)?.campusIds[0] ?? centralCampusId); }} value={personaId}>{demoPersonas.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}</select><select className="campusSelect" aria-label="Cơ sở" disabled={!context} onChange={(event) => { setSelectedRecordId(null); setCampusId(event.target.value); }} value={campusId}>{(context?.campuses ?? [{ id: centralCampusId, code: 'CENTRAL', name: 'Cơ sở Trung tâm', timezone: 'Asia/Ho_Chi_Minh' }]).map((campus) => <option key={campus.id} value={campus.id}>{campus.name}</option>)}</select><button aria-label={darkMode ? 'Dùng giao diện sáng' : 'Dùng giao diện tối'} className="themeToggle" onClick={() => setDarkMode((current) => !current)} type="button">{darkMode ? '☀' : '◐'}</button><span className="avatar">{initials || '—'}</span></div></header><div className="content">{demoMode === 'static' && <div className="notice">STATIC PREVIEW — dữ liệu trên màn hình không được đọc từ API.</div>}{demoMode === 'live' && connectionError && <div className="connectionError" role="alert"><strong>LIVE LOCAL DEMO chưa kết nối được API.</strong><span>{connectionError}</span><button className="secondary" onClick={() => { void refresh(); }} type="button">Thử lại</button></div>}{tab === 'overview' ? <Overview summary={summary} tasks={tasks} onCreate={() => setLeadModal(true)} timezone={timezone} /> : tab === 'tasks' ? <TaskBoard connected={connected} error={taskError} onUpdate={updateTask} query={query} setQuery={setQuery} tasks={tasks} updatingTaskId={updatingTaskId} /> : <Records onCreate={() => setLeadModal(true)} onSelect={(id) => { void selectRecord(id); }} query={query} recordStatus={recordStatus} rows={filtered} selectedId={selectedRecordId} setQuery={setQuery} setRecordStatus={setRecordStatus} tab={tab} timezone={timezone} />}{selectedRow && (tab === 'leads' || tab === 'applications') && <DemoJourney busy={journeyBusy} error={journeyError} kind={tab === 'leads' ? 'lead' : 'application'} onAction={(action) => { void runJourneyAction(action, selectedRow); }} onClose={() => setSelectedRecordId(null)} onOpenSop={openRelatedSop} roleName={roleName} row={selectedRow} />}{tab === 'applications' && selectedRow && connected && context?.user?.id === persona.actorId && <ApplicationPanels applicationId={text(selectedRow.id)} headers={requestHeaders} key={`${persona.actorId}:${campusId}:${text(selectedRow.id)}`} offer={typeof selectedRow.offer_id === 'string' ? { id: selectedRow.offer_id, code: text(selectedRow.offer_code), status: text(selectedRow.offer_status), pendingApproval: null, validUntil: null } : null} onRefresh={refresh} permissions={context.permissions} timezone={timezone} />}{tab === 'sops' && sopDetail && <SopWorkspace audit={sopAudit} busy={journeyBusy} detail={sopDetail} error={journeyError} onClose={() => { setSelectedRecordId(null); setSopDetail(null); }} onComment={addSopComment} onTransition={(status) => { void runSopTransition(status); }} roleName={roleName} />}</div></main>
     {leadModal && <LeadModal campusId={campusId} connected={connected} headers={requestHeaders} onClose={() => setLeadModal(false)} onCreated={() => { setLeadModal(false); void refresh(); }} />}
   </div>;
+}
+
+// GET /applications currently omits approval_requests and offer.valid_until.
+// Keep those values unknown until a reviewed read contract exposes them; never infer
+// discount approval from the unrelated Offer PENDING_APPROVAL workflow status.
+function ApplicationPanels({ applicationId, headers, permissions, offer, timezone, onRefresh }: {
+  applicationId: string;
+  headers: Record<string, string>;
+  permissions: string[];
+  offer: ApprovalOffer | null;
+  timezone: string;
+  onRefresh: () => Promise<void>;
+}) {
+  function allowed(permission: string): boolean {
+    return permissions.includes(permission) || permissions.includes(`${permission.split(':')[0]}:*`)
+      || permissions.includes('*') || permissions.includes('development:*');
+  }
+  const canRead = allowed('medical:read');
+  const canEdit = allowed('medical:edit');
+  const canApprove = allowed('offer:approve-discount');
+  const [clearance, setClearance] = useState<MedicalClearance | null>(null);
+  const [medicalLoading, setMedicalLoading] = useState(true);
+  const [medicalBusy, setMedicalBusy] = useState(false);
+  const [medicalError, setMedicalError] = useState('');
+  const [discountBusy, setDiscountBusy] = useState(false);
+  const [discountError, setDiscountError] = useState('');
+  // The component is keyed by actor/campus/application: drafts and errors cannot
+  // carry over to another record or persona. Ignore late initial GET responses.
+  useEffect(() => {
+    let active = true;
+    if (!canRead && !canEdit) return;
+    setMedicalLoading(true);
+    void api<MedicalClearance | null>(`/medical/clearances/${applicationId}`, headers)
+      .then((result) => { if (active) { setClearance(result); setMedicalError(''); } })
+      .catch((caught: unknown) => { if (active) setMedicalError(caught instanceof Error ? caught.message : 'Không thể tải xác nhận y tế'); })
+      .finally(() => { if (active) setMedicalLoading(false); });
+    return () => { active = false; };
+  }, [applicationId, canRead, canEdit]);
+
+  async function reloadMedical(): Promise<void> {
+    setMedicalLoading(true);
+    setMedicalError('');
+    setClearance(null);
+    try { setClearance(await api<MedicalClearance | null>(`/medical/clearances/${applicationId}`, headers)); }
+    catch (caught) { setMedicalError(caught instanceof Error ? caught.message : 'Không thể tải xác nhận y tế'); }
+    finally { setMedicalLoading(false); }
+  }
+
+  async function saveMedical(command: ClearanceCommand): Promise<void> {
+    if (!canEdit || medicalBusy || medicalLoading) return;
+    setMedicalBusy(true); setMedicalError('');
+    try {
+      await api<MedicalClearance>(`/medical/clearances/${applicationId}`, headers, { method: 'PUT', body: JSON.stringify(command) });
+      await reloadMedical();
+      await onRefresh();
+    } catch (caught) { setMedicalError(caught instanceof Error ? caught.message : 'Không thể lưu xác nhận y tế'); }
+    finally { setMedicalBusy(false); }
+  }
+
+  async function decideDiscount(offerId: string, decision: DiscountDecision): Promise<void> {
+    if (!canApprove || discountBusy || offer?.id !== offerId || offer.pendingApproval !== true) return;
+    setDiscountBusy(true); setDiscountError('');
+    try {
+      await api<{ id: string; status: string; rowVersion: string }>(`/applications/offers/${offerId}/discount-approval`, headers, { method: 'POST', body: JSON.stringify({ decision }) });
+      await onRefresh();
+    } catch (caught) {
+      const message = caught instanceof Error ? caught.message : 'Không thể duyệt chiết khấu';
+      setDiscountError(`Không thể ghi nhận quyết định chiết khấu: ${message}`);
+    } finally { setDiscountBusy(false); }
+  }
+
+  return <>
+    <MedicalClearancePanel busy={medicalBusy} canEdit={canEdit} canRead={canRead} clearance={clearance} error={medicalError} loading={medicalLoading} onReload={reloadMedical} onSave={saveMedical} />
+    {offer && <DiscountApprovalPanel busy={discountBusy} canApprove={canApprove} error={discountError} offer={offer} onDecision={decideDiscount} timezone={timezone} />}
+  </>;
 }
 
 function Overview({ summary, tasks, onCreate, timezone }: { summary: Summary; tasks: TaskItem[]; onCreate: () => void; timezone: string }) {

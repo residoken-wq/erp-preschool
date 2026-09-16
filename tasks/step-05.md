@@ -135,5 +135,27 @@ nhiều người dùng thật cùng sửa, đó là quyết định làm lại c
 
 ---
 ## Đề xuất phát sinh (Codex điền nếu có, KHÔNG tự code)
-- Ý tưởng/refactor phát sinh ngoài scope: ...
-- Vấn đề gặp phải cần Planning Manager quyết định: ...
+- Blocker AC5/AC6/AC7 (Codex, 16/09/2026): `ApplicationService.list()` chỉ trả
+  `offer_id`, `offer_code`, `offer_status`; không trả `approval_requests` PENDING
+  hoặc `valid_until`. Các controller hiện tại không có GET Offer/approval khác.
+  Cần Planning Manager chốt mở rộng read contract và scope backend (owner: Planning
+  Manager + Admission API owner), kèm permission/tenant/campus tests. Không thể chứng
+  minh badge/nút duyệt và hạn thực tế chỉ bằng các API đọc hiện tại. UI giữ hai giá trị
+  là unknown, không suy đoán discount PENDING từ Offer `PENDING_APPROVAL`, không lấy
+  thông tin từ audit log, không cache response mutation để thay thế refetch.
+  `DiscountApprovalPanel` có nhánh render/confirm/callback đầy đủ theo props, và cha
+  có POST + error/refetch; chưa kích hoạt nhánh PENDING trong ứng dụng vì thiếu dữ liệu
+  đọc được xác nhận. Chưa implement backend hoặc giả định tên field API tương lai.
+- Gap AC1 cho actor **chỉ** có `medical:edit`: GET clearance yêu cầu `medical:read`
+  riêng, PUT yêu cầu `medical:edit`; không có quan hệ kế thừa quyền. Khi GET bị 403,
+  UI hiển thị lỗi và không dựng form trống để tránh ghi đè dữ liệu chưa được đọc.
+  Cần Planning Manager/permission owner bảo đảm actor sửa có cả hai quyền ở Step 06,
+  hoặc quyết định thay đổi contract trong scope khác. Không sửa persona/seed/API.
+- Tự review tĩnh quyền và layout Tailwind/light/dark/mobile trong code; không chạy
+  UI thật theo mục 5. AC8 cần Claude xác nhận qua trình duyệt ở bước audit.
+- Hai panel đứng độc lập cạnh DemoJourney; không cần sửa action type/journey files.
+  Không thêm dependency hoặc test framework React ngoài scope.
+- Giới hạn handoff: `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test`,
+  `pnpm data:guard`, `docker compose config --quiet` đều exit 0. Không dựng full-stack.
+  `git add` thất bại vì `.git/index.lock: Read-only file system`; chưa stage/commit
+  được trong sandbox hiện tại. Message commit cần giữ nguyên như mục 5.
