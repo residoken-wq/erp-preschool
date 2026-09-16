@@ -106,11 +106,14 @@ nhiều người dùng thật cùng sửa, đó là quyết định làm lại c
 ## 5. Định nghĩa Done
 
 - [ ] `pnpm lint && pnpm typecheck && pnpm build` xanh (đặc biệt `apps/web` build vì
-      đây là thay đổi React/Next.js).
-- [ ] `pnpm dev` (hoặc `pnpm --filter @sop-os/web dev`) chạy thử bằng mắt: xác nhận panel
-      hiện/ẩn đúng theo quyền, dark mode, responsive — ghi rõ trong báo cáo đã tự kiểm
-      tra bằng cách nào (screenshot không bắt buộc nhưng khuyến khích nếu công cụ có
-      sẵn).
+      đây là thay đổi React/Next.js). Đây là bằng chứng bắt buộc Codex phải tự chạy.
+- [ ] **Cập nhật theo `docs/PLAN.md` §0 (chốt 15/09/2026, sau Step 04):** Codex **không**
+      cần tự chạy `pnpm dev`/dựng full-stack để kiểm tra bằng mắt — việc này chuyển hoàn
+      toàn sang bước audit của Claude (dựng `apps/web` + `apps/api` thật, thao tác qua
+      trình duyệt) để tiết kiệm cửa sổ usage 5 giờ của Codex. Thay vào đó, Codex tự review
+      tĩnh logic hiển thị/ẩn theo quyền trong diff (đọc lại đúng điều kiện render của từng
+      panel so với Acceptance Criteria mục 4) và ghi rõ trong commit message/báo cáo đã
+      tự soát lại các điều kiện đó bằng cách đọc code, không phải chạy UI thật.
 - [ ] Không có `pnpm test` mới bắt buộc ở step này (UI thuần, không có unit test framework
       cho React trong repo hiện tại — nếu muốn thêm, ghi vào "Đề xuất phát sinh", không
       tự ý cài `@testing-library/react` mới).
