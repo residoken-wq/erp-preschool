@@ -22,9 +22,17 @@ cụ thể cho những chỗ SOP/audit chỉ nêu ý định, chưa nêu giá tr
    PASS ở Step 01-05 ngoài phạm vi Domain 01 (task board, SOP workspace, lead...).
 2. **2 persona mới, đúng tên SOP §C.4:**
    - **"Cán bộ Y tế"** (role code `MEDICAL_OFFICER`) — permissions:
-     `['medical:read', 'medical:edit']`. **Quyết định:** hai quyền này luôn đi cùng nhau
-     (khớp backlog Step 05 "medical:edit luôn kèm medical:read" — không có ai chỉ có edit
-     mà thiếu read). **Không** có `application:*` nào khác — đúng SOP "Medical Only".
+     `['medical:read', 'medical:edit', 'application:read']`. **Quyết định:** hai quyền
+     medical luôn đi cùng nhau (khớp backlog Step 05 "medical:edit luôn kèm medical:read").
+     **Cập nhật 16/09/2026 (phát hiện ở audit sau vòng code đầu):** ban đầu spec định
+     KHÔNG cho `application:read` (đúng nghĩa đen SOP "Medical Only"), nhưng test thật qua
+     API xác nhận điều đó khiến `GET /applications` trả 403 cho persona này — nghĩa là
+     trên UI, chọn persona "Cán bộ Y tế" rồi vào tab Applications sẽ thấy lỗi kết nối, KHÔNG
+     BAO GIỜ chọn được Application nào để mở `MedicalClearancePanel` (UI bắt buộc chọn 1
+     dòng từ danh sách trước khi render panel chi tiết). Vô hiệu hoá đúng mục đích thêm
+     persona này. Áp dụng cùng lý do đã dùng cho Hiệu trưởng (mục dưới): `application:read`
+     chỉ là quyền xem, không phải `application:transition`, không phá SoD. Thêm quyền này
+     cho Cán bộ Y tế để persona thực sự dùng được qua UI.
    - **"Hiệu trưởng"** (role code `PRINCIPAL`) — permissions:
      `['application:read', 'offer:approve-discount']`. **Quyết định:** thêm
      `application:read` dù SOP nói "Medical Only"/không nói rõ Hiệu trưởng có gì khác
@@ -145,12 +153,13 @@ Postgres**, không cần fixture schema riêng cho case này. Mục 3 dưới đ
      `centralCampusId` (hằng số đã có trong file, không hard-code lại UUID).
   - **KHÔNG sửa gì khác trong file này** (không đụng `ApplicationPanels`, không đụng logic
     Step 05 đã PASS).
-- `apps/api/src/platform/permissions.test.ts` — thêm test case mới (không sửa case cũ):
-  xác nhận `hasRequiredPermissions(['medical:read','medical:edit'], ['application:transition'])`
-  và `hasRequiredPermissions(['medical:read','medical:edit'], ['offer:approve-discount'])`
-  đều `false`; `hasRequiredPermissions(['application:read','offer:approve-discount'],
-  ['application:transition'])` và `(..., ['medical:edit'])` đều `false`; và xác nhận các
-  quyền ĐÚNG của mỗi persona vẫn `true` cho hành động của họ (không chỉ test phủ định).
+- `apps/api/src/platform/permissions.test.ts` — **cập nhật 16/09/2026:** vì Cán bộ Y tế
+  giờ có thêm `application:read` (mục 0.2), sửa lại fixture `permissions` của case Cán bộ Y
+  tế đã có (nếu đã tồn tại từ vòng code trước) thành `['medical:read','medical:edit',
+  'application:read']`, thêm khẳng định `hasRequiredPermissions(permissions,
+  ['application:read'])` → `true`; các khẳng định phủ định giữ nguyên
+  (`application:transition`, `offer:approve-discount`, `offer:create`, `offer:transition`
+  vẫn phải `false`). Case Hiệu trưởng không đổi.
 - `apps/api/src/modules/admission/application.service.test.ts` — thêm đúng 1 test case
   mới, **KHÔNG cần Postgres** (xem "Cập nhật 16/09/2026" cuối mục 0 để biết lý do). Không
   sửa test case cũ.
