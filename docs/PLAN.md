@@ -85,7 +85,7 @@ Nguồn: `docs/CODEX_DOMAIN_INSTRUCTIONS/D01-SOP-ADM-003-admission-contract-enro
 | 02 | Medical clearance service/controller/permission + dọn numbering collision `MIGRATION_PLAN.md` | **DONE (PASS)** | `tasks/step-02.md` | `reports/step-02-audit.md` |
 | 03 | Discount threshold + approval logic trong `application.service.ts` (dùng `rule_configs`/`approval_requests`) | **DONE (PASS)** | `tasks/step-03.md` | `reports/step-03-audit.md` |
 | 04 | Offer holding-seat auto-expiry worker | **DONE (PASS)** | `tasks/step-04.md` | `reports/step-04-audit.md` |
-| 05 | UI: panel xác nhận y tế + panel duyệt discount. Quyết định idempotency đã chốt trong `tasks/step-05.md` §0 (không thêm optimistic concurrency, UI refetch sau mỗi hành động) | **IN PROGRESS — Codex đang code (16/09/2026)** | `tasks/step-05.md` | — |
+| 05 | UI: panel xác nhận y tế + panel duyệt discount. Quyết định idempotency đã chốt trong `tasks/step-05.md` §0 (không thêm optimistic concurrency, UI refetch sau mỗi hành động) | **FAIL (lần 1), đang REVISE (16/09/2026)** — xem `tasks/step-05-revise.md` | `tasks/step-05.md` + `tasks/step-05-revise.md` | `reports/step-05-audit.md` |
 | 06 | Seed demo cập nhật persona + test tích hợp/permission âm đầy đủ + **cập nhật `scripts/demo-journey-smoke.mjs`** để gọi PUT medical clearance trước khi tạo Offer (phát sinh từ step 02) + **thêm seed `rule_configs` cho `admission.discount_threshold_percent`** (phát sinh từ step 03, xem `reports/step-03-audit.md` mục 5, nếu không demo sẽ 409 khi có discount) | TODO (chờ step 05 PASS) | — | — |
 
 **Domain 01 core logic (BR-ADM-002/003/004) hoàn tất qua Step 01-04.** Còn UI (05) và
@@ -133,3 +133,14 @@ step nào:
   nghĩa Done) để khớp rule mới ở §0: bỏ yêu cầu Codex tự chạy `pnpm dev`/kiểm tra bằng
   mắt, chuyển việc dựng full-stack + xác nhận UI qua trình duyệt hoàn toàn sang bước audit
   của Claude. Step 05 chuyển `IN PROGRESS`, gọi `codex exec` với sandbox `workspace-write`.
+- 16/09/2026: Codex hoàn thành phần UI trong scope nhưng không tự commit được (sandbox
+  `.git` read-only) — Claude commit hộ (`25faab5`). Audit dựng full-stack thật
+  (`docker compose up postgres migrate api web`, bỏ qua `minio` không kéo được image) và
+  gọi API thật bằng `curl`/`node fetch`, phát hiện 2 vấn đề: (A) bug thật — `GET
+  /medical/clearances/:id` trả 200 body rỗng khi chưa có clearance, `api<T>()` không xử lý
+  nên ném lỗi JSON parse, chặn đúng golden path lần đầu; (B) blocker đã biết trước (Codex
+  tự báo) — `GET /applications` thiếu field đọc `approval_requests` PENDING/`valid_until`
+  của offer, nên `DiscountApprovalPanel` không hoạt động thật được. `reports/step-05-audit.md`
+  = FAIL. Soạn `tasks/step-05-revise.md` (việc A sửa frontend, việc B mở rộng tối thiểu,
+  chỉ đọc, `apps/api` — ngoại lệ có kiểm soát so với scope Step 05 gốc). Không viết
+  `tasks/step-06.md` cho tới khi step 05 PASS.
