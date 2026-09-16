@@ -110,25 +110,50 @@ Nguồn: `tasks/step-07.md` mục 0 (quyết định), `docs/CODEX_EXECUTION_PLA
 |---|---|---|---|---|
 | 07 | Migration `0009`: thêm `row_version`/`updated_at` + index `application_id` cho `application_documents`/`assessments` (nền tảng, không code service) | **DONE (PASS)** | `tasks/step-07.md` | `reports/step-07-audit.md` |
 
-**TẠM DỪNG theo yêu cầu Repository Owner (16/09/2026):** sau khi Step 07 PASS, dừng triển
-khai tiếp Domain 02 để đánh giá chiến lược sản phẩm (so sánh với LittleLives/SanAnKids —
-xem hội thoại phiên này, không có file riêng). Không viết `tasks/step-08.md` cho đến khi
-có xác nhận tiếp tục từ Repository Owner.
+**TẠM DỪNG 16/09/2026 → ĐỔI ƯU TIÊN 16/09/2026 (cùng ngày):** sau khi Step 07 PASS,
+Repository Owner yêu cầu dừng đào sâu Domain 02 để đánh giá chiến lược sản phẩm (so sánh
+với LittleLives/SanAnKids — tóm tắt ở nhật ký mục 4 dưới, phân tích đầy đủ trong hội thoại
+phiên này, không có file riêng). Kết luận: pain-point tần suất cao nhất của trường/phụ
+huynh (điểm danh, học phí, giao tiếp phụ huynh, y tế) nằm ở Phase 3
+(`docs/IMPLEMENTATION_ROADMAP.md`), chưa domain nào trong số đó được code. Repository Owner
+quyết định: **chuyển ưu tiên sang Domain 03 (SIS-001 điểm danh) và các domain "dùng thật"
+kế tiếp** (SIS-002, MED-001, FIN-001 — xem thứ tự đã sắp lại ở mục 3), **Domain 02
+(document/assessment) tạm gác lại**, không phải vì sai mà vì ưu tiên thấp hơn theo đúng
+đánh giá pain-point. Không quay lại viết `tasks/step-08.md` cho Domain 02 trừ khi Repository
+Owner yêu cầu lại.
 
-## 3. Hàng đợi domain kế tiếp (sau khi Domain 02 xong)
+## 2.2 Domain 03 — SOP-SIS-001 (Track B, đang làm)
 
-Theo thứ tự wave trong `docs/CODEX_FULL_DEMO_PLAN.md` §3-4 — chỉ liệt kê, chưa viết
-step nào. **Lưu ý:** dòng 1 dưới đây giữ nguyên nhãn gốc của `CODEX_FULL_DEMO_PLAN.md`
-("001/002/004") dù đã xác định ở mục 2.1 trên là nhãn sai/dư — không sửa file
-`CODEX_FULL_DEMO_PLAN.md` (ngoài phạm vi PLAN.md), chỉ ghi chú ở đây để không nhầm lần
-sau.
+Nguồn: `docs/ERP_PreSchoolSOP (1).md` dòng 545 ("Thẻ 3", SOP-SIS-001 — Quy trình Đón Trả
+trẻ An toàn và Điểm danh Hàng ngày). Domain **chưa có** file
+`docs/CODEX_DOMAIN_INSTRUCTIONS/D03-*.md` riêng — `tasks/step-08.md` mục 0 đóng vai trò
+đó, giống cách `tasks/step-07.md` đã làm cho Domain 02.
 
-1. ~~Domain 02 — SOP-ADM-001/002/004~~ (đang làm, xem mục 2.1 — thực chất chỉ 001+002)
-2. Domain 03 — SOP-SIS-001 (điểm danh/đón trả)
-3. Domain 04 — SOP-SIS-002 (nhật ký chăm sóc)
-4. Domain 05 — SOP-MED-001 (y tế/dị ứng/thuốc — lưu ý dùng lại `medical_clearances`
-   pattern từ Domain 01, không tạo khái niệm y tế thứ hai)
-5. ... (xem đầy đủ ở `docs/CODEX_FULL_DEMO_PLAN.md` §4)
+| Step | Nội dung | Trạng thái | Task file | Audit file |
+|---|---|---|---|---|
+| 08 | (đang nghiên cứu SOP + schema trước khi viết spec) | ĐANG VIẾT SPEC | — | — |
+
+## 3. Hàng đợi domain kế tiếp
+
+Đổi thứ tự 16/09/2026 theo yêu cầu Repository Owner: ưu tiên domain giải quyết pain-point
+tần suất cao của trường/phụ huynh (điểm danh, học phí, giao tiếp, y tế — đúng thứ tự
+Phase 3 trong `docs/IMPLEMENTATION_ROADMAP.md` mục 10.2) trước, domain hành chính/nội bộ
+(document verification, academic scheduling...) gác sau. **Lưu ý nhãn:** dòng SIS-002 dưới
+đây giữ nguyên nhãn gốc `CODEX_FULL_DEMO_PLAN.md`, chưa xác minh lại như đã làm với Domain
+02 — xác minh lại nhãn/canonical ID trước khi viết spec cho từng domain, không giả định.
+
+1. **Domain 03 — SOP-SIS-001 (điểm danh/đón trả)** — đang làm, xem mục 2.2.
+2. Domain 04 — SOP-SIS-002 (nhật ký chăm sóc + giao tiếp phụ huynh hàng ngày) — pain-point
+   "app phụ huynh" mà cả 2 đối thủ tham chiếu đều lấy làm trọng tâm.
+3. Domain 05 — SOP-MED-001 (y tế/dị ứng/thuốc — lưu ý dùng lại `medical_clearances`
+   pattern từ Domain 01, không tạo khái niệm y tế thứ hai; rủi ro an toàn cao nhất theo
+   `docs/CODEX_FULL_DEMO_PLAN.md`, không rút gọn quy trình xác nhận).
+4. Domain 06 — SOP-FIN-001 (học phí/hoá đơn/thanh toán) — pain-point "học phí" mà cả 2 đối
+   thủ tham chiếu đều lấy làm trọng tâm.
+5. Domain 02 (tạm gác) — SOP-ADM-001/002 (document verification/assessment) — quay lại
+   sau khi 4 domain trên xong, hoặc khi Repository Owner yêu cầu.
+6. Các domain còn lại — xem đầy đủ ở `docs/CODEX_FULL_DEMO_PLAN.md` §4 (ACA-001, SEC-001,
+   Wave 2/3/4...), chưa xếp thứ tự lại, xử lý khi tới lượt.
 
 ## 4. Nhật ký thay đổi trạng thái
 
@@ -228,3 +253,11 @@ sau.
   danh) thay vì đào sâu tiếp Domain 02, nếu mục tiêu là có sản phẩm dùng được sớm — quyết
   định cuối thuộc Repository Owner. **Không viết `tasks/step-08.md` cho tới khi có xác
   nhận tiếp tục.**
+- 16/09/2026 (cùng ngày, tiếp): Repository Owner xác nhận hướng — chuyển sang Domain 03
+  (SIS-001 điểm danh) và các domain "dùng thật" kế tiếp giải quyết pain-point trường/phụ
+  huynh, tạm gác Domain 02. Cập nhật mục 2.1/2.2/3 theo thứ tự ưu tiên mới (SIS-001 →
+  SIS-002 → MED-001 → FIN-001 → Domain 02 tạm gác → phần còn lại). Đang nghiên cứu toàn
+  văn SOP-SIS-001 + schema hiện có (persons/enrollments) trước khi viết `tasks/step-08.md`
+  — domain này chưa có bảng attendance/guardian nào, khả năng cần migration lớn hơn Step
+  01/07 (không chỉ ALTER, có thể cần bảng mới) vì đây là domain hoàn toàn mới, không như
+  Domain 02 tận dụng bảng có sẵn từ Step 01 cũ.
