@@ -131,7 +131,11 @@ trẻ An toàn và Điểm danh Hàng ngày). Domain **chưa có** file
 
 | Step | Nội dung | Trạng thái | Task file | Audit file |
 |---|---|---|---|---|
-| 08 | Migration `0010`: `parent_guardians` (HRI, mutable) + `attendance_events` (append-only, trigger chặn UPDATE/DELETE) — nền tảng, không code service | IN PROGRESS — Codex đang code (16/09/2026) | `tasks/step-08.md` | — |
+| 08 | Migration `0010`: `parent_guardians` (HRI, mutable) + `attendance_events` (append-only, trigger chặn UPDATE/DELETE) — nền tảng, không code service | **DONE (PASS)** | `tasks/step-08.md` | `reports/step-08-audit.md` |
+
+Không viết `tasks/step-09.md` cho đến khi có thời gian chuẩn bị spec tiếp theo (service ghi
+nhận điểm danh + gate pickup verification, dùng 8 permission đã chốt ở `tasks/step-08.md`
+mục 0.6).
 
 Tóm tắt quyết định (đầy đủ ở `tasks/step-08.md` mục 0): không tạo bảng `classes` (dùng
 `enrollment_id` làm đại diện trẻ); không có cột ảnh (DEC-006 vẫn OPEN, cùng lý do Domain
@@ -267,3 +271,14 @@ Phase 3 trong `docs/IMPLEMENTATION_ROADMAP.md` mục 10.2) trước, domain hàn
   — domain này chưa có bảng attendance/guardian nào, khả năng cần migration lớn hơn Step
   01/07 (không chỉ ALTER, có thể cần bảng mới) vì đây là domain hoàn toàn mới, không như
   Domain 02 tận dụng bảng có sẵn từ Step 01 cũ.
+- 16/09/2026 (tiếp): Codex code xong migration `0010` (commit `b5e914d`). Audit bằng
+  Postgres thật — migrate từ DB trống, migrate lần 2 idempotent, seed Step 06 không hồi
+  quy, và **verify trigger append-only bằng cách thật sự thử UPDATE/DELETE** 1 dòng
+  `attendance_events` synthetic (insert offer→enrollment→event trong 1 transaction, dùng
+  `DO $$ EXCEPTION $$` bắt lỗi, rồi ROLLBACK toàn bộ — không để lại dữ liệu test) — cả 2
+  thao tác đều bị chặn đúng thông báo `attendance_events is append-only`.
+  `reports/step-08-audit.md` = PASS. Codex phát hiện gap composite FK cross-org (thiếu ràng
+  buộc DB đảm bảo `organization_id` khớp giữa bảng mới và `persons`/`enrollments`) — xác
+  nhận đây là nợ kiến trúc có từ `medical_clearances` (Domain 01), không phải regression
+  của step này, ghi backlog hardening riêng thay vì sửa lẻ tẻ. Domain 03 có nền tảng, chờ
+  Step 09 (service ghi nhận điểm danh + gate verify).
