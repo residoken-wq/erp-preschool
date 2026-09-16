@@ -132,10 +132,12 @@ trẻ An toàn và Điểm danh Hàng ngày). Domain **chưa có** file
 | Step | Nội dung | Trạng thái | Task file | Audit file |
 |---|---|---|---|---|
 | 08 | Migration `0010`: `parent_guardians` (HRI, mutable) + `attendance_events` (append-only, trigger chặn UPDATE/DELETE) — nền tảng, không code service | **DONE (PASS)** | `tasks/step-08.md` | `reports/step-08-audit.md` |
+| 09 | Service `attendance` — gate check-in + class check-in (2 POST + 1 GET), idempotent qua `clientEventId`, permission `attendance:record`/`attendance:read` | IN PROGRESS — Codex đang code (16/09/2026) | `tasks/step-09.md` | — |
 
-Không viết `tasks/step-09.md` cho đến khi có thời gian chuẩn bị spec tiếp theo (service ghi
-nhận điểm danh + gate pickup verification, dùng 8 permission đã chốt ở `tasks/step-08.md`
-mục 0.6).
+Phạm vi Step 09 **chỉ** nửa buổi sáng (gate + class check-in) — pickup/handover
+dual-verification (Bước 04-06 SOP), auto-lock 09:00/red-alert 09:15 (cần worker), và
+`attendance:amend` đều để step sau (Step 10/11), không gộp vào step này (xem
+`tasks/step-09.md` mục 0.1).
 
 Tóm tắt quyết định (đầy đủ ở `tasks/step-08.md` mục 0): không tạo bảng `classes` (dùng
 `enrollment_id` làm đại diện trẻ); không có cột ảnh (DEC-006 vẫn OPEN, cùng lý do Domain
