@@ -225,5 +225,5 @@ hiểu tiền lệ nếu cần).
 
 ---
 ## Đề xuất phát sinh (Codex điền nếu có, KHÔNG tự code)
-- Ý tưởng/refactor phát sinh ngoài scope: ...
-- Vấn đề gặp phải cần Planning Manager quyết định: ...
+- Ý tưởng/refactor phát sinh ngoài scope: không có.
+- Vấn đề gặp phải cần Planning Manager quyết định: schema bắt buộc dùng FK đơn theo ID, chưa có composite FK bảo đảm organization của guardian/event khớp person/enrollment/actor/guardian liên quan (AGENTS.md §9). Giữ nguyên SQL đã chốt; đề nghị Planning Manager xác định step hardening tenant boundary trước khi dùng production, không tự thêm constraint ở Step 08.
