@@ -5,6 +5,10 @@ Lead-to-Enrollment. Roadmap triển khai nằm tại `docs/IMPLEMENTATION_ROADMA
 Bản source lồng trong `docs/.../02_Release_Candidate_Source` là snapshot lịch sử
 chỉ đọc; không phát triển song song ở đó.
 
+Kế hoạch ưu tiên cho bản trình diễn hoàn toàn trên máy local nằm tại
+`docs/LOCAL_DEMO_DELIVERY_PLAN.md`. Kế hoạch này chỉ dùng dữ liệu synthetic và
+không thay thế các gate bắt buộc trước khi deploy product hoặc dùng dữ liệu thật.
+
 ## Kiến trúc
 
 - `apps/web`: Next.js Web.
@@ -16,6 +20,9 @@ chỉ đọc; không phát triển song song ở đó.
 - `database/migrations`: PostgreSQL migrations.
 - `database/seed`: Seed mẫu không chứa dữ liệu thật.
 - `scripts`: Migration và seed commands.
+
+Worker local dùng `OUTBOX_PROVIDER=development-console`, chỉ log event metadata và
+lưu synthetic receipt; cấu hình này bị từ chối khi `NODE_ENV=production`.
 
 ## Yêu cầu
 
@@ -51,6 +58,17 @@ Các lệnh vận hành local không xóa volume dữ liệu:
 ./scripts/local-services.sh rebuild  # dùng sau khi source/dependency thay đổi
 ./scripts/local-services.sh stop
 ```
+
+Chuẩn bị dataset cố định trước khi demo khách hàng:
+
+```bash
+LOCAL_DEMO_RESET_CONFIRM=RESET_SYNTHETIC_DEMO \
+  ./scripts/local-services.sh demo-reset
+./scripts/local-services.sh demo-ready
+```
+
+Xem checklist tại `docs/runbooks/local-demo.md`. `demo-reset` thay toàn bộ database
+local bằng synthetic seed; không chạy trên môi trường có dữ liệu cần giữ lại.
 
 Có thể dùng alias pnpm tương ứng: `pnpm local:start`, `pnpm local:rebuild`,
 `pnpm local:status`, `pnpm local:logs`, `pnpm local:smoke`, `pnpm local:restart`
@@ -109,12 +127,31 @@ nhưng không thay thế trách nhiệm không nhập dữ liệu người thậ
 
 ## Trạng thái Step 11
 
-MVP Sprint 1–7 đã có vertical slice từ SOP Registry/Studio/Approval đến Lead,
-Application, Offer, Enrollment, Finance Setup và Handover. Dashboard, work queue,
-audit/outbox, dữ liệu demo và CI smoke test đã được tích hợp.
+MVP Sprint 1–7 có vertical slice code thật (không phải mock) từ SOP
+Registry/Studio/Approval đến Lead, Application, Offer, Enrollment, Finance
+Setup và Handover, cộng thêm outbox delivery runtime, task board và demo
+journey UI. Dashboard, work queue, audit/outbox và dữ liệu demo synthetic đã
+được tích hợp và chạy được qua `pnpm local:demo:ready`.
 
-Xem `docs/SPRINT_1_7_REPORT.md` và `docs/API_CONTRACT_MVP.md`. Các lựa chọn IdP,
-hosting, object-storage production, RPO/RTO và RLS vẫn cần ADR approval trước pilot.
+Giới hạn hiện tại cần biết trước khi dùng làm baseline cho việc khác:
+
+- Golden path Offer → Enrollment → Finance → Handover chỉ được kiểm bằng
+  script rehearsal thủ công (`pnpm demo:journey:smoke`), **chưa** nằm trong
+  `.github/workflows/ci.yml` — CI hiện chỉ chạy `pnpm smoke` và
+  `pnpm outbox:smoke` (health, lead, permission, duplicate, invalid
+  transition).
+- `application_documents` và `assessments` là bảng đã migrate nhưng chưa có
+  service/controller nào đọc/ghi; các state liên quan trong
+  `packages/domain/src/application-state-machine.ts` là label, chưa có
+  workflow.
+- Không có OIDC, tenant RLS, approval/rule-config engine hay secure upload
+  adapter — xem `docs/CODEX_EXECUTION_PLAN.md` và
+  `docs/backlog/PHASE_1_2_BACKLOG.md` mục cảnh báo sequencing.
+
+Xem `docs/SPRINT_1_7_REPORT.md`, `docs/API_CONTRACT_MVP.md` và
+`docs/CODEX_EXECUTION_PLAN.md` (trạng thái code hiện tại + backlog kế tiếp).
+Các lựa chọn IdP, hosting, object-storage production, RPO/RTO và RLS vẫn cần
+ADR approval trước pilot.
 
 ## Step 12 — Release readiness
 
@@ -122,7 +159,9 @@ Security hardening, UAT catalog, pilot rollout và sign-off template nằm tại
 
 - `docs/SOP_012_UAT_SECURITY_PILOT_RELEASE.md`
 - `docs/UAT_SIGNOFF_TEMPLATE.md`
-- `docs/STEP_12_RELEASE_READINESS_REPORT.md`
+- `docs/STEP_12_RELEASE_READINESS_REPORT.md` (đã cập nhật 15/09/2026 để tách
+  rõ gap môi trường/vendor khỏi gap implementation còn thiếu)
 
 Release chỉ được xem là production-ready sau khi các gate staging, OIDC,
-security scan, restore test và business sign-off đã đạt.
+security scan, restore test và business sign-off đã đạt. Gate G0
+(`docs/governance/PHASE_0_GATE_G0.md`) hiện vẫn `NOT READY FOR PASS`.

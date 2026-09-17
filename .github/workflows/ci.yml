@@ -29,6 +29,8 @@ jobs:
       DATABASE_URL: postgresql://sop_os:sop_os_ci@localhost:5432/sop_os
       APP_ORIGIN: http://localhost:3000
       AUTH_MODE: development
+      OUTBOX_PROVIDER: development-console
+      OUTBOX_POLL_INTERVAL_MS: 250
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -46,12 +48,15 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
-      - name: API smoke test
+      - name: API and outbox smoke test
         run: |
           pnpm --filter @sop-os/api start &
           api_pid=$!
+          pnpm --filter @sop-os/worker start &
+          worker_pid=$!
+          trap 'kill "$api_pid" "$worker_pid" 2>/dev/null || true' EXIT
           pnpm smoke
-          kill "$api_pid"
+          pnpm outbox:smoke
 
   compose-config:
     runs-on: ubuntu-latest

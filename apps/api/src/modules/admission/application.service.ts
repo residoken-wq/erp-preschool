@@ -1,10 +1,15 @@
-import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { ActorContext, ApplicationStatus, PageResult } from '@sop-os/contracts';
 import { applicationStateMachine } from '@sop-os/domain';
 import type { Pool } from 'pg';
 import { randomUUID } from 'node:crypto';
 import { PG_POOL } from '../../platform/database.module.js';
 import { recordMutation } from '../../platform/mutation-log.js';
+import { getActiveRuleConfigValue } from '../../platform/rule-config.js';
+import { createApprovalRequest, getPendingApprovalRequest, decideApprovalRequest } from '../../platform/approval-requests.js';
+import { hasRequiredPermissions } from '../../platform/permissions.js';
+import { MedicalService } from '../medical/medical.service.js';
+import type { Pagination } from '../../platform/pagination.js';
 
 type ApplicationRow = {
   id: string;
@@ -25,6 +30,7 @@ type OfferRow = {
   program_code: string;
   intake_code: string;
   row_version: string;
+  created_by: string | null;
 };
 
 const offerTransitions: Readonly<Record<string, readonly string[]>> = {
@@ -35,26 +41,83 @@ const offerTransitions: Readonly<Record<string, readonly string[]>> = {
   ACCEPTED: [], DECLINED: [], EXPIRED: [], WITHDRAWN: []
 };
 
+export function assertOfferApprovalSeparation(createdBy: string | null, actorId: string, targetStatus: string): void {
+  if (targetStatus === 'APPROVED' && createdBy === actorId) {
+    throw new ConflictException('Offer author cannot approve their own offer');
+  }
+}
+
+export function assertMedicalCleared(clearance: { cleared: boolean } | null | undefined): void {
+  if (!clearance?.cleared) {
+    throw new ConflictException('Medical clearance required before offer can be created');
+  }
+}
+
+export type DiscountApprovalCommand = { decision: 'APPROVED' | 'REJECTED'; reason?: string };
+
+export function parseDiscountApprovalCommand(value: unknown): DiscountApprovalCommand {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new BadRequestException('Approval body must be an object');
+  const body = value as Record<string, unknown>;
+  if (Object.keys(body).some((key) => !['decision', 'reason'].includes(key))) throw new BadRequestException('Approval body contains unknown fields');
+  if (body.decision !== 'APPROVED' && body.decision !== 'REJECTED') throw new BadRequestException('decision must be APPROVED or REJECTED');
+  if (body.reason !== undefined && (typeof body.reason !== 'string' || body.reason.length > 4000)) throw new BadRequestException('reason must be a string of at most 4000 characters');
+  return { decision: body.decision, ...(body.reason === undefined ? {} : { reason: body.reason }) };
+}
+
 @Injectable()
 export class ApplicationService {
-  constructor(@Inject(PG_POOL) private readonly pool: Pool) {}
+  constructor(@Inject(PG_POOL) private readonly pool: Pool, private readonly medical: MedicalService) {}
 
-  async list(actor: ActorContext, filter: { status?: ApplicationStatus | undefined; query?: string | undefined }): Promise<PageResult<Record<string, unknown>>> {
+  async list(actor: ActorContext, filter: { status?: ApplicationStatus | undefined; query?: string | undefined; pagination?: Pagination }): Promise<PageResult<Record<string, unknown>>> {
+    const pagination = filter.pagination ?? { page: 1, pageSize: 100, offset: 0 };
     const result = await this.pool.query<Record<string, unknown>>(
       `SELECT a.id, a.code, a.status, a.campus_id, a.program_code, a.intake_code, a.assigned_user_id,
               a.submitted_at, a.created_at, l.code AS lead_code,
-              p.first_name, p.last_name, count(*) OVER() AS total_count
+              p.first_name, p.last_name,
+              latest_offer.id AS offer_id, latest_offer.code AS offer_code, latest_offer.status AS offer_status,
+              latest_offer.valid_until AS offer_valid_until,
+              COALESCE(latest_offer.discount_pending, false) AS offer_discount_pending,
+              latest_enrollment.id AS enrollment_id, latest_enrollment.code AS enrollment_code,
+              latest_enrollment.status AS enrollment_status, latest_enrollment.handover_status,
+              latest_enrollment.contract_status, latest_enrollment.fee_plan_status,
+              count(*) OVER() AS total_count
        FROM applications a
        LEFT JOIN leads l ON l.id = a.lead_id
        LEFT JOIN persons p ON p.id = l.primary_contact_person_id
+       LEFT JOIN LATERAL (
+         SELECT o.id, o.code, o.status, o.valid_until,
+                EXISTS (
+                  SELECT 1 FROM approval_requests ar
+                  WHERE ar.organization_id = o.organization_id
+                    AND ar.entity_type = 'Offer' AND ar.entity_id = o.id
+                    AND ar.status = 'PENDING'
+                ) AS discount_pending
+         FROM offers o
+         WHERE o.application_id = a.id AND o.organization_id = a.organization_id
+         ORDER BY o.version_number DESC, o.created_at DESC LIMIT 1
+       ) latest_offer ON true
+       LEFT JOIN LATERAL (
+         SELECT e.id, e.code, e.status, h.status AS handover_status,
+                c.status AS contract_status, fp.status AS fee_plan_status
+         FROM enrollments e
+         LEFT JOIN handover_packages h ON h.enrollment_id = e.id
+         LEFT JOIN LATERAL (SELECT status FROM contracts WHERE enrollment_id = e.id ORDER BY version_number DESC LIMIT 1) c ON true
+         LEFT JOIN LATERAL (SELECT status FROM fee_plans WHERE enrollment_id = e.id ORDER BY created_at DESC LIMIT 1) fp ON true
+         WHERE e.application_id = a.id AND e.organization_id = a.organization_id
+         ORDER BY e.created_at DESC LIMIT 1
+       ) latest_enrollment ON true
        WHERE a.organization_id = $1 AND a.campus_id = ANY($2::uuid[])
          AND ($3::text IS NULL OR a.status = $3)
          AND ($4 = '' OR a.code ILIKE '%' || $4 || '%' OR p.first_name || ' ' || p.last_name ILIKE '%' || $4 || '%')
-       ORDER BY a.created_at DESC LIMIT 100`,
-      [actor.organizationId, actor.campusIds, filter.status ?? null, filter.query?.trim() ?? '']
+       ORDER BY a.created_at DESC LIMIT $5 OFFSET $6`,
+      [actor.organizationId, actor.campusIds, filter.status ?? null, filter.query?.trim() ?? '', pagination.pageSize, pagination.offset]
     );
     const total = Number(result.rows[0]?.total_count ?? 0);
-    return { data: result.rows, meta: { page: 1, pageSize: 100, total } };
+    return { data: result.rows.map((row) => {
+      const copy: Record<string, unknown> = { ...row };
+      delete copy.total_count;
+      return copy;
+    }), meta: { page: pagination.page, pageSize: pagination.pageSize, total } };
   }
 
   async transition(actor: ActorContext, id: string, command: { to: ApplicationStatus; reason?: string }): Promise<Record<string, unknown>> {
@@ -70,9 +133,9 @@ export class ApplicationService {
       try { applicationStateMachine.transition(application.status, command.to); } catch { throw new ConflictException(`Transition ${application.status} -> ${command.to} is not allowed`); }
       if (['INCOMPLETE', 'WAITLISTED', 'REJECTED'].includes(command.to) && !command.reason?.trim()) throw new BadRequestException('reason is required');
       const result = await client.query<Record<string, unknown>>(
-        `UPDATE applications SET status = $3,
-           submitted_at = CASE WHEN $3 = 'SUBMITTED' THEN now() ELSE submitted_at END,
-           verified_at = CASE WHEN $3 = 'VERIFIED' THEN now() ELSE verified_at END,
+        `UPDATE applications SET status = $3::varchar,
+           submitted_at = CASE WHEN $3::varchar = 'SUBMITTED' THEN now() ELSE submitted_at END,
+           verified_at = CASE WHEN $3::varchar = 'VERIFIED' THEN now() ELSE verified_at END,
            updated_at = now(), row_version = row_version + 1
          WHERE id = $1 AND organization_id = $2 RETURNING id, code, status, row_version`,
         [id, actor.organizationId, command.to]
@@ -97,6 +160,9 @@ export class ApplicationService {
     command: { code: string; validUntil: string; terms: Record<string, unknown> }
   ): Promise<Record<string, unknown>> {
     if (!command.code || !command.validUntil) throw new BadRequestException('code and validUntil are required');
+    if (command.terms !== undefined && (!command.terms || typeof command.terms !== 'object' || Array.isArray(command.terms))) throw new BadRequestException('terms must be an object');
+    const discountPercent = command.terms?.discountPercent ?? 0;
+    if (command.terms?.discountPercent === null || typeof discountPercent !== 'number' || !Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent > 100) throw new BadRequestException('discountPercent must be a number from 0 to 100');
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
@@ -107,18 +173,27 @@ export class ApplicationService {
       const application = current.rows[0];
       if (!application || !actor.campusIds.includes(application.campus_id)) throw new NotFoundException('Application not found');
       if (application.status !== 'DECISION_PENDING') throw new ConflictException('Offer requires application in DECISION_PENDING');
+      assertMedicalCleared(await this.medical.getClearance(actor, applicationId));
+      let thresholdPercent: unknown = null;
+      if (discountPercent > 0) {
+        thresholdPercent = await getActiveRuleConfigValue(client, { organizationId: actor.organizationId, campusId: application.campus_id, configKey: 'admission.discount_threshold_percent' });
+        if (typeof thresholdPercent !== 'number' || !Number.isFinite(thresholdPercent) || thresholdPercent < 0 || thresholdPercent > 100) throw new ConflictException('A valid discount threshold configuration is required');
+      }
+      const requiresApproval = typeof thresholdPercent === 'number' && discountPercent > thresholdPercent;
       const id = randomUUID();
       const result = await client.query<Record<string, unknown>>(
-        `INSERT INTO offers(id, organization_id, application_id, code, terms_json, valid_until)
-         VALUES ($1, $2, $3, $4, $5::jsonb, $6) RETURNING id, code, status, version_number, valid_until`,
-        [id, actor.organizationId, applicationId, command.code, JSON.stringify(command.terms ?? {}), command.validUntil]
+        `INSERT INTO offers(id, organization_id, application_id, code, terms_json, valid_until, created_by)
+         VALUES ($1, $2, $3, $4, $5::jsonb, $6, $7) RETURNING id, code, status, version_number, valid_until, created_by`,
+        [id, actor.organizationId, applicationId, command.code, JSON.stringify(command.terms ?? {}), command.validUntil, actor.actorId]
       );
+      // Step 03 deliberately implements one approval level; multi-level routing is P1-E06.
+      const approval = requiresApproval ? await createApprovalRequest(client, actor, { entityType: 'Offer', entityId: id, thresholdSnapshot: { discountPercent, thresholdPercent } }) : null;
       await recordMutation(client, actor, {
         action: 'offer.create', objectType: 'Offer', objectId: id, after: result.rows[0],
         eventType: 'OfferDrafted', payload: { offerId: id, applicationId }
       });
       await client.query('COMMIT');
-      return result.rows[0]!;
+      return { ...result.rows[0], ...(approval ? { requiresApproval: true, approvalRequestId: approval.id } : {}) };
     } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
   }
 
@@ -127,20 +202,28 @@ export class ApplicationService {
     try {
       await client.query('BEGIN');
       const current = await client.query<OfferRow>(
-        `SELECT o.id, o.application_id, o.status, o.code, a.campus_id, a.program_code, a.intake_code, o.row_version
+        `SELECT o.id, o.application_id, o.status, o.code, a.campus_id, a.program_code, a.intake_code, o.row_version, o.created_by
          FROM offers o JOIN applications a ON a.id = o.application_id
          WHERE o.id = $1 AND o.organization_id = $2 FOR UPDATE OF o`, [offerId, actor.organizationId]
       );
       const offer = current.rows[0];
       if (!offer || !actor.campusIds.includes(offer.campus_id)) throw new NotFoundException('Offer not found');
       if (!(offerTransitions[offer.status] ?? []).includes(command.to)) throw new ConflictException(`Transition ${offer.status} -> ${command.to} is not allowed`);
+      assertOfferApprovalSeparation(offer.created_by, actor.actorId, command.to);
+      if (command.to === 'APPROVED') {
+        const blocked = await client.query<{ id: string }>(
+          `SELECT id FROM approval_requests WHERE organization_id = $1 AND entity_type = 'Offer'
+           AND entity_id = $2 AND status IN ('PENDING', 'REJECTED') LIMIT 1`, [actor.organizationId, offerId]
+        );
+        if (blocked.rows[0]) throw new ConflictException('Offer discount requires approval before it can be approved');
+      }
       if (['DRAFT', 'DECLINED', 'WITHDRAWN'].includes(command.to) && !command.reason?.trim()) throw new BadRequestException('reason is required');
       const result = await client.query<Record<string, unknown>>(
-        `UPDATE offers SET status = $3,
-           approved_by = CASE WHEN $3 = 'APPROVED' THEN $4 ELSE approved_by END,
-           approved_at = CASE WHEN $3 = 'APPROVED' THEN now() ELSE approved_at END,
-           issued_at = CASE WHEN $3 = 'ISSUED' THEN now() ELSE issued_at END,
-           responded_at = CASE WHEN $3 IN ('ACCEPTED','DECLINED') THEN now() ELSE responded_at END,
+        `UPDATE offers SET status = $3::varchar,
+           approved_by = CASE WHEN $3::varchar = 'APPROVED' THEN $4 ELSE approved_by END,
+           approved_at = CASE WHEN $3::varchar = 'APPROVED' THEN now() ELSE approved_at END,
+           issued_at = CASE WHEN $3::varchar = 'ISSUED' THEN now() ELSE issued_at END,
+           responded_at = CASE WHEN $3::varchar IN ('ACCEPTED','DECLINED') THEN now() ELSE responded_at END,
            updated_at = now(), row_version = row_version + 1
          WHERE id = $1 AND organization_id = $2 RETURNING id, code, status, version_number, valid_until`,
         [offerId, actor.organizationId, command.to, actor.actorId]
@@ -155,13 +238,34 @@ export class ApplicationService {
     } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
   }
 
+  async decideOfferDiscountApproval(actor: ActorContext, offerId: string, body: unknown): Promise<{ id: string; status: string; rowVersion: string }> {
+    if (!hasRequiredPermissions(actor.permissions, ['offer:approve-discount'])) throw new ForbiddenException('Discount approval permission required');
+    const command = parseDiscountApprovalCommand(body);
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(offerId)) throw new BadRequestException('offerId must be a UUID');
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      const offer = await client.query<{ id: string }>(
+        `SELECT o.id FROM offers o JOIN applications a ON a.id = o.application_id AND a.organization_id = o.organization_id
+         WHERE o.id = $1 AND o.organization_id = $2 AND a.campus_id = ANY($3::uuid[]) FOR UPDATE OF o`,
+        [offerId, actor.organizationId, actor.campusIds]
+      );
+      if (!offer.rows[0]) throw new NotFoundException('Offer not found');
+      const pending = await getPendingApprovalRequest(client, 'Offer', offerId, actor.organizationId);
+      if (!pending) throw new ConflictException('No pending discount approval request');
+      const result = await decideApprovalRequest(client, actor, pending.id, command.decision, command.reason);
+      await client.query('COMMIT');
+      return result;
+    } catch (error) { await client.query('ROLLBACK'); throw error; } finally { client.release(); }
+  }
+
   async createEnrollment(actor: ActorContext, offerId: string, command: { code: string }): Promise<Record<string, unknown>> {
     if (!command.code) throw new BadRequestException('code is required');
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
       const current = await client.query<OfferRow>(
-        `SELECT o.id, o.application_id, o.status, o.code, a.campus_id, a.program_code, a.intake_code, o.row_version
+        `SELECT o.id, o.application_id, o.status, o.code, a.campus_id, a.program_code, a.intake_code, o.row_version, o.created_by
          FROM offers o JOIN applications a ON a.id = o.application_id
          WHERE o.id = $1 AND o.organization_id = $2 FOR UPDATE OF o`, [offerId, actor.organizationId]
       );
@@ -265,10 +369,10 @@ export class ApplicationService {
       if (command.to === 'READY' && checklist.some((item) => !item.complete)) throw new BadRequestException('All mandatory checklist items must be complete');
       if (command.to === 'RETURNED' && !command.reason?.trim()) throw new BadRequestException('reason is required when returning a handover');
       const updated = await client.query<Record<string, unknown>>(
-        `UPDATE handover_packages SET status = $3, checklist_json = $4::jsonb, exception_reason = $5,
-           submitted_at = CASE WHEN $3 = 'SUBMITTED' THEN now() ELSE submitted_at END,
-           accepted_at = CASE WHEN $3 = 'ACCEPTED' THEN now() ELSE accepted_at END,
-           accepted_by = CASE WHEN $3 = 'ACCEPTED' THEN $6 ELSE accepted_by END,
+        `UPDATE handover_packages SET status = $3::varchar, checklist_json = $4::jsonb, exception_reason = $5,
+           submitted_at = CASE WHEN $3::varchar = 'SUBMITTED' THEN now() ELSE submitted_at END,
+           accepted_at = CASE WHEN $3::varchar = 'ACCEPTED' THEN now() ELSE accepted_at END,
+           accepted_by = CASE WHEN $3::varchar = 'ACCEPTED' THEN $6 ELSE accepted_by END,
            updated_at = now(), row_version = row_version + 1
          WHERE enrollment_id = $1 AND organization_id = $2 RETURNING id, enrollment_id, status, checklist_json, row_version`,
         [enrollmentId, actor.organizationId, command.to, JSON.stringify(checklist), command.reason ?? null, actor.actorId]

@@ -30,7 +30,7 @@
 | Frozen install | PASS; lockfile unchanged, 326 packages |
 | Lint | PASS, 6 workspace projects |
 | Strict typecheck | PASS, 6 workspace projects |
-| Unit | PASS: domain 7 + API permission 4 + config 3 + data-policy script 7 = 21 tests |
+| Unit | PASS (30/08/2026 snapshot): domain 7 + API permission 4 + config 3 + data-policy script 7 = 21 tests. Stale — see 15/09/2026 note below for current count. |
 | Build | PASS: Web/API/Worker/shared packages |
 | Compose config | PASS |
 | Empty DB migrations | PASS: `0001`–`0005` trên PostgreSQL 16 |
@@ -48,6 +48,24 @@
 Smoke bao gồm health/security headers, context/dashboard/list, create lead, missing
 permission `403`, prohibited pre-G1 ingestion `422`, duplicate `409`, invalid
 transition `409` và audit-chain integrity.
+
+## Cập nhật 15/09/2026 — không đổi gate status
+
+Branch `feat/task-workflow-ui` (outbox delivery runtime, task board, demo
+journey UI, pagination, Application → Offer → Enrollment → Finance →
+Handover backend) đã được merge cục bộ vào `merge/task-workflow-ui-into-main`
+và verify lại toàn bộ gate (`data:guard`, `lint`, `typecheck`, `test`,
+`build`, `docker compose config`) trên checkout sạch — hiện có 35+ test case
+qua 10 file vitest cộng 3 script test, thay cho con số 21 ở snapshot
+30/08/2026. Một bug thứ tự script (`test` chạy trước `build`, làm test import
+`@sop-os/domain` fail trên checkout sạch) đã được sửa bằng `pretest` hook.
+Nội dung này **không** làm Gate G0 chuyển `PASS`: NS-005/NS-006/NS-007 vẫn là
+điều kiện bắt buộc, và code admission mới thuộc phạm vi Phase 2 (P2-E05–E09),
+được xây trước khi Phase 1 platform hardening (OIDC, RLS, approval/rule
+engine, secure upload) tồn tại — xem `docs/backlog/PHASE_1_2_BACKLOG.md` và
+`docs/CODEX_EXECUTION_PLAN.md` cho chi tiết và rủi ro sequencing này. Merge
+branch chưa được push lên `origin` (chưa có credential trong phiên làm việc
+review này); push và mở PR vẫn là việc của Repository Owner.
 
 ## Lỗi baseline đã sửa trong Phase 0
 

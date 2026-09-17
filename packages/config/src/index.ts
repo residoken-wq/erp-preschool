@@ -13,6 +13,7 @@ const envSchema = z.object({
   OIDC_CLIENT_ID: z.preprocess((value) => value === '' ? undefined : value, z.string().min(1).optional()),
   OIDC_CLIENT_SECRET: z.preprocess((value) => value === '' ? undefined : value, z.string().min(1).optional()),
   OUTBOX_POLL_INTERVAL_MS: z.coerce.number().int().min(250).default(2000),
+  OFFER_EXPIRY_POLL_INTERVAL_MS: z.coerce.number().int().min(250).max(2_147_483_647).default(2000),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info')
 });
 

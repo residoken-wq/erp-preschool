@@ -3,6 +3,7 @@ import type { ActorContext, ApplicationStatus, PageResult } from '@sop-os/contra
 import { CurrentActor } from '../../platform/actor-context.js';
 import { ApplicationService } from './application.service.js';
 import { RequirePermissions } from '../../platform/permissions.js';
+import { parsePagination } from '../../platform/pagination.js';
 
 @Controller('applications')
 @RequirePermissions('application:read')
@@ -13,9 +14,12 @@ export class ApplicationController {
   list(
     @CurrentActor() actor: ActorContext,
     @Query('status') status?: ApplicationStatus,
-    @Query('q') query?: string
+    @Query('q') query?: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string
   ): Promise<PageResult<Record<string, unknown>>> {
-    return this.applications.list(actor, { status, query });
+    const pagination = parsePagination(page, pageSize);
+    return this.applications.list(actor, { status, query, pagination });
   }
 
   @Post(':id/transitions')
@@ -46,6 +50,16 @@ export class ApplicationController {
     @Body() command: { to: string; reason?: string }
   ): Promise<Record<string, unknown>> {
     return this.applications.transitionOffer(actor, offerId, command);
+  }
+
+  @Post('offers/:offerId/discount-approval')
+  @RequirePermissions('offer:approve-discount')
+  decideOfferDiscountApproval(
+    @CurrentActor() actor: ActorContext,
+    @Param('offerId') offerId: string,
+    @Body() command: unknown
+  ): Promise<{ id: string; status: string; rowVersion: string }> {
+    return this.applications.decideOfferDiscountApproval(actor, offerId, command);
   }
 
   @Post('offers/:offerId/enrollment')

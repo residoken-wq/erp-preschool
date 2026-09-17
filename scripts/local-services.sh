@@ -11,6 +11,7 @@ api_origin="${LOCAL_API_ORIGIN:-http://localhost:3001/api/v1}"
 api_origin="${api_origin%/}"
 api_health_url="${LOCAL_API_HEALTH_URL:-${api_origin}/health/ready}"
 web_url="${LOCAL_WEB_URL:-http://localhost:3000}"
+database_url="${LOCAL_DATABASE_URL:-postgresql://sop_os:${POSTGRES_PASSWORD:-sop_os_dev}@localhost:5432/sop_os}"
 wait_attempts="${LOCAL_START_WAIT_ATTEMPTS:-60}"
 wait_interval_seconds="${LOCAL_START_WAIT_INTERVAL_SECONDS:-2}"
 
@@ -114,6 +115,42 @@ run_smoke() {
   )
 }
 
+run_demo_readiness() {
+  require_command curl
+  require_positive_integer "LOCAL_START_WAIT_ATTEMPTS" "${wait_attempts}"
+  require_positive_integer "LOCAL_START_WAIT_INTERVAL_SECONDS" "${wait_interval_seconds}"
+  wait_for_url "API" "${api_health_url}"
+  wait_for_url "Web" "${web_url}"
+
+  (
+    export API_ORIGIN="${api_origin}"
+    export DATABASE_URL="${database_url}"
+    run_pnpm demo:ready
+  )
+}
+
+reset_demo() {
+  require_command docker
+  require_command curl
+  if [[ "${LOCAL_DEMO_RESET_CONFIRM:-}" != "RESET_SYNTHETIC_DEMO" ]]; then
+    echo "Demo reset replaces the local PostgreSQL schema with the canonical synthetic dataset." >&2
+    echo "Re-run with LOCAL_DEMO_RESET_CONFIRM=RESET_SYNTHETIC_DEMO." >&2
+    exit 2
+  fi
+
+  "${compose[@]}" version >/dev/null
+  "${compose[@]}" stop api worker
+  "${compose[@]}" run --rm \
+    -e NODE_ENV=development \
+    -e ALLOW_DEV_RESET=true \
+    migrate sh -c 'pnpm db:reset:dev && pnpm db:migrate && pnpm db:seed'
+  "${compose[@]}" up -d api worker web
+  wait_for_url "API" "${api_health_url}"
+  wait_for_url "Web" "${web_url}"
+  run_demo_readiness
+  echo "Local demo reset complete. Only the canonical synthetic scenario is present."
+}
+
 command="${1:-start}"
 if (($# > 0)); then
   shift
@@ -145,6 +182,12 @@ case "${command}" in
   smoke)
     run_smoke
     ;;
+  demo-ready)
+    run_demo_readiness
+    ;;
+  demo-reset)
+    reset_demo
+    ;;
   stop)
     require_command docker
     "${compose[@]}" stop
@@ -161,6 +204,8 @@ Commands:
   status             Show all local service states
   logs [services...] Follow logs (defaults: api web worker migrate)
   smoke              Wait for API/Web and run the synthetic API/security smoke suite
+  demo-ready         Verify services and the clean canonical demo scenario
+  demo-reset         Replace local DB with the canonical synthetic demo scenario
   stop               Stop services without deleting persistent volumes
   help               Show this help
 
@@ -169,8 +214,12 @@ Optional environment variables:
   LOCAL_START_WAIT_INTERVAL_SECONDS
   LOCAL_API_HEALTH_URL
   LOCAL_API_ORIGIN
+  LOCAL_DATABASE_URL
   LOCAL_WEB_URL
   LOCAL_LOG_TAIL
+
+Demo reset confirmation:
+  LOCAL_DEMO_RESET_CONFIRM=RESET_SYNTHETIC_DEMO
 EOF
     ;;
   *)

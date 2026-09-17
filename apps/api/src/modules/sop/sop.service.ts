@@ -59,7 +59,14 @@ export class SopService {
        FROM sop_steps st JOIN roles r ON r.id = st.actor_role_id
        WHERE st.sop_version_id = $1 ORDER BY st.step_no`, [currentId]
     ) : { rows: [] };
-    return { ...header.rows[0], versions: versions.rows, sections: sections.rows, steps: steps.rows };
+    const comments = currentId ? await this.pool.query<Record<string, unknown>>(
+      `SELECT c.id, c.body, c.status, c.created_at, u.display_name AS author_name
+       FROM sop_review_comments c
+       JOIN user_accounts u ON u.id = c.author_user_id
+       WHERE c.sop_version_id = $1 AND c.organization_id = $2
+       ORDER BY c.created_at DESC LIMIT 50`, [currentId, actor.organizationId]
+    ) : { rows: [] };
+    return { ...header.rows[0], versions: versions.rows, sections: sections.rows, steps: steps.rows, comments: comments.rows };
   }
 
   async create(
@@ -190,11 +197,11 @@ export class SopService {
         );
       }
       const result = await client.query<Record<string, unknown>>(
-        `UPDATE sop_versions SET status = $3,
-           approved_by = CASE WHEN $3 = 'APPROVED' THEN $4 ELSE approved_by END,
-           approved_at = CASE WHEN $3 = 'APPROVED' THEN now() ELSE approved_at END,
-           effective_from = CASE WHEN $3 = 'EFFECTIVE' THEN COALESCE($5::timestamptz, now()) ELSE effective_from END,
-           locked_at = CASE WHEN $3 IN ('IN_REVIEW','APPROVED','SCHEDULED','EFFECTIVE') THEN now() ELSE NULL END,
+        `UPDATE sop_versions SET status = $3::varchar,
+           approved_by = CASE WHEN $3::varchar = 'APPROVED' THEN $4 ELSE approved_by END,
+           approved_at = CASE WHEN $3::varchar = 'APPROVED' THEN now() ELSE approved_at END,
+           effective_from = CASE WHEN $3::varchar = 'EFFECTIVE' THEN COALESCE($5::timestamptz, now()) ELSE effective_from END,
+           locked_at = CASE WHEN $3::varchar IN ('IN_REVIEW','APPROVED','SCHEDULED','EFFECTIVE') THEN now() ELSE NULL END,
            updated_at = now(), row_version = row_version + 1
          WHERE id = $1 AND organization_id = $2 RETURNING id, sop_id, version_label, status, effective_from, row_version`,
         [versionId, actor.organizationId, command.to, actor.actorId, command.effectiveFrom ?? null]
